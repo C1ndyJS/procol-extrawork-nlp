@@ -1,104 +1,104 @@
-# ExtraWorks Architecture
+# Arquitectura de ExtraWorks
 
-## Overview
+## Descripción General
 
-ExtraWorks is a modular web application built with a focus on extensibility and maintainability. The application features a natural language processing (NLP) action search engine that allows users to interact with the system using natural language queries.
+ExtraWorks es una aplicación web modular construida con un enfoque en la extensibilidad y mantenibilidad. La aplicación cuenta con un motor de búsqueda de acciones con procesamiento de lenguaje natural (NLP) que permite a los usuarios interactuar con el sistema usando consultas en lenguaje natural.
 
-## Architecture Layers
+## Capas de Arquitectura
 
-### 1. Backend Architecture
+### 1. Arquitectura del Backend
 
-#### Domain Layer (`backend/src/domain/`)
-Contains business logic and data access services.
+#### Capa de Dominio (`backend/src/domain/`)
+Contiene la lógica de negocio y servicios de acceso a datos.
 
-- **ExtraWorkService**: Handles CRUD operations for ExtraWork entities
-- **ResourceService**: Manages Resource entities associated with ExtraWorks
+- **ExtraWorkService**: Maneja operaciones CRUD para entidades ExtraWork
+- **ResourceService**: Gestiona entidades Resource asociadas con ExtraWorks
 
-**Key Features:**
-- Encapsulates all database operations
-- Provides clean interfaces for business logic
-- Uses Prisma ORM for type-safe database access
+**Características Clave:**
+- Encapsula todas las operaciones de base de datos
+- Proporciona interfaces limpias para la lógica de negocio
+- Usa Prisma ORM para acceso a base de datos con seguridad de tipos
 
-#### Intention Layer (`backend/src/intentions/`)
-The core of the NLP system, implementing an extensible plugin architecture.
+#### Capa de Intenciones (`backend/src/intentions/`)
+El núcleo del sistema NLP, implementando una arquitectura de plugins extensible.
 
-**Components:**
-- **Intention.ts**: Base interface and abstract class for all intentions
-- **IntentionRegistry.ts**: Central registry for managing intentions
-- **modules/**: Individual intention implementations
+**Componentes:**
+- **Intention.ts**: Interfaz base y clase abstracta para todas las intenciones
+- **IntentionRegistry.ts**: Registro central para gestionar intenciones
+- **modules/**: Implementaciones individuales de intenciones
 
-**How it works:**
-1. Each intention defines keywords and a match algorithm
-2. The registry finds the best matching intention for a given query
-3. Intentions execute their specific business logic
+**Cómo funciona:**
+1. Cada intención define palabras clave y un algoritmo de coincidencia
+2. El registro encuentra la mejor intención coincidente para una consulta dada
+3. Las intenciones ejecutan su lógica de negocio específica
 
-**Example Intentions:**
-- `CreateExtraWorkIntention`: Creates new work items
-- `SearchExtraWorkIntention`: Searches existing work items
-- `UpdateExtraWorkIntention`: Updates work items
-- `DeleteExtraWorkIntention`: Deletes work items
-- `AddResourceIntention`: Adds resources to work items
+**Ejemplos de Intenciones:**
+- `CreateExtraWorkIntention`: Crea nuevos elementos de trabajo
+- `SearchExtraWorkIntention`: Busca elementos de trabajo existentes
+- `UpdateExtraWorkIntention`: Actualiza elementos de trabajo
+- `DeleteExtraWorkIntention`: Elimina elementos de trabajo
+- `AddResourceIntention`: Agrega recursos a elementos de trabajo
 
 #### Action Factory (`backend/src/utils/ActionFactory.ts`)
-Implements the Factory pattern to generate executable actions.
+Implementa el patrón Factory para generar acciones ejecutables.
 
-**Responsibilities:**
-- Creates actions from natural language queries
-- Provides direct intent-based action creation
-- Returns searchable action suggestions with confidence scores
+**Responsabilidades:**
+- Crea acciones a partir de consultas en lenguaje natural
+- Proporciona creación directa de acciones basadas en intenciones
+- Devuelve sugerencias de acciones buscables con puntajes de confianza
 
-#### API Layer (`backend/src/api/routes/`)
-REST API endpoints for external access.
+#### Capa de API (`backend/src/api/routes/`)
+Endpoints de API REST para acceso externo.
 
-**Route Groups:**
-- **extrawork.routes.ts**: CRUD endpoints for ExtraWorks
-- **resource.routes.ts**: CRUD endpoints for Resources
-- **action.routes.ts**: NLP search and execution endpoints
+**Grupos de Rutas:**
+- **extrawork.routes.ts**: Endpoints CRUD para ExtraWorks
+- **resource.routes.ts**: Endpoints CRUD para Resources
+- **action.routes.ts**: Endpoints de búsqueda y ejecución NLP
 
-### 2. Frontend Architecture
+### 2. Arquitectura del Frontend
 
-#### Component Layer (`frontend/src/components/`)
-React components implementing the user interface.
+#### Capa de Componentes (`frontend/src/components/`)
+Componentes React que implementan la interfaz de usuario.
 
-- **SearchBar.tsx**: Natural language search interface
-  - Accepts text queries
-  - Displays matching actions with confidence scores
-  - Allows direct action execution
+- **SearchBar.tsx**: Interfaz de búsqueda en lenguaje natural
+  - Acepta consultas de texto
+  - Muestra acciones coincidentes con puntajes de confianza
+  - Permite ejecución directa de acciones
 
-- **ExtraWorkList.tsx**: CRUD interface for ExtraWorks
-  - Lists all ExtraWorks
-  - Create/Update/Delete operations
-  - Form for new ExtraWork creation
+- **ExtraWorkList.tsx**: Interfaz CRUD para ExtraWorks
+  - Lista todos los ExtraWorks
+  - Operaciones de Crear/Actualizar/Eliminar
+  - Formulario para la creación de nuevo ExtraWork
 
-#### Service Layer (`frontend/src/services/api.ts`)
-Encapsulates all API communication.
+#### Capa de Servicio (`frontend/src/services/api.ts`)
+Encapsula toda la comunicación con la API.
 
-**Benefits:**
-- Centralized API logic
-- Type-safe responses
-- Easy to mock for testing
-- Consistent error handling
+**Beneficios:**
+- Lógica de API centralizada
+- Respuestas con seguridad de tipos
+- Fácil de simular para pruebas
+- Manejo consistente de errores
 
-## Data Flow
+## Flujo de Datos
 
-### Creating an ExtraWork via NLP
+### Creando un ExtraWork mediante NLP
 
 ```
-User Input: "create new task"
+Entrada del Usuario: "crear nueva tarea"
     ↓
-SearchBar Component
+Componente SearchBar
     ↓
 API Service → POST /api/actions/search
     ↓
 Action Routes
     ↓
-Action Factory → finds best matching intention
+Action Factory → encuentra la mejor intención coincidente
     ↓
-IntentionRegistry → returns "create_extrawork"
+IntentionRegistry → devuelve "create_extrawork"
     ↓
-SearchBar displays action with confidence score
+SearchBar muestra la acción con puntaje de confianza
     ↓
-User clicks "Execute"
+Usuario hace clic en "Ejecutar"
     ↓
 API Service → POST /api/actions/execute/create_extrawork
     ↓
@@ -106,19 +106,19 @@ CreateExtraWorkIntention.execute()
     ↓
 ExtraWorkService.create()
     ↓
-Prisma → Database
+Prisma → Base de Datos
     ↓
-Response → User sees success message
+Respuesta → Usuario ve mensaje de éxito
 ```
 
-### Traditional CRUD Flow
+### Flujo CRUD Tradicional
 
 ```
-User clicks "New ExtraWork"
+Usuario hace clic en "Nuevo ExtraWork"
     ↓
-Form displays
+Se muestra el formulario
     ↓
-User fills form and submits
+Usuario completa el formulario y envía
     ↓
 API Service → POST /api/extraworks
     ↓
@@ -126,129 +126,129 @@ ExtraWork Routes
     ↓
 ExtraWorkService.create()
     ↓
-Prisma → Database
+Prisma → Base de Datos
     ↓
-Response → List refreshes
+Respuesta → La lista se actualiza
 ```
 
-## Extensibility
+## Extensibilidad
 
-### Adding a New Intention
+### Agregando una Nueva Intención
 
-1. **Create Intention Module**
+1. **Crear Módulo de Intención**
 ```typescript
 // backend/src/intentions/modules/MyIntention.ts
 import { BaseIntention } from '../Intention';
 
 export class MyIntention extends BaseIntention {
-  name = 'my_custom_action';
-  keywords = ['my', 'custom', 'keywords'];
-  description = 'What this intention does';
+  name = 'mi_accion_personalizada';
+  keywords = ['mis', 'palabras', 'clave', 'personalizadas'];
+  description = 'Lo que hace esta intención';
 
   constructor(private myService: MyService) {
     super();
   }
 
   async execute(params: any): Promise<any> {
-    // Implementation
+    // Implementación
     return {
       success: true,
       data: result,
-      message: 'Success message'
+      message: 'Mensaje de éxito'
     };
   }
 }
 ```
 
-2. **Register Intention**
+2. **Registrar Intención**
 ```typescript
 // backend/src/index.ts
 intentionRegistry.register(new MyIntention(myService));
 ```
 
-3. **No frontend changes needed!** The NLP search will automatically discover and use the new intention.
+3. **¡No se necesitan cambios en el frontend!** La búsqueda NLP descubrirá y usará automáticamente la nueva intención.
 
-### Adding a New Domain Service
+### Agregando un Nuevo Servicio de Dominio
 
-1. Create service in `backend/src/domain/`
-2. Inject PrismaClient
-3. Implement business logic methods
-4. Create corresponding routes in `backend/src/api/routes/`
+1. Crear servicio en `backend/src/domain/`
+2. Inyectar PrismaClient
+3. Implementar métodos de lógica de negocio
+4. Crear rutas correspondientes en `backend/src/api/routes/`
 
-### Adding a New Frontend Feature
+### Agregando una Nueva Característica en Frontend
 
-1. Create component in `frontend/src/components/`
-2. Use API service for backend communication
-3. Update App.tsx to include new component
+1. Crear componente en `frontend/src/components/`
+2. Usar servicio API para comunicación con backend
+3. Actualizar App.tsx para incluir el nuevo componente
 
-## Technology Choices
+## Elecciones Tecnológicas
 
 ### Backend
 
-- **TypeScript**: Type safety and better developer experience
-- **Express**: Lightweight, flexible web framework
-- **Prisma**: Modern ORM with excellent TypeScript support
-- **SQLite**: Simple, file-based database (easy to switch to PostgreSQL/MySQL)
+- **TypeScript**: Seguridad de tipos y mejor experiencia de desarrollo
+- **Express**: Framework web ligero y flexible
+- **Prisma**: ORM moderno con excelente soporte de TypeScript
+- **SQLite**: Base de datos simple basada en archivos (fácil de cambiar a PostgreSQL/MySQL)
 
 ### Frontend
 
-- **React**: Component-based UI library
-- **Vite**: Fast build tool with great DX
-- **TypeScript**: Type safety across the stack
+- **React**: Biblioteca de UI basada en componentes
+- **Vite**: Herramienta de compilación rápida con excelente DX
+- **TypeScript**: Seguridad de tipos en toda la pila
 
-## Design Patterns
+## Patrones de Diseño
 
-1. **Service Pattern**: Encapsulates business logic in services
-2. **Factory Pattern**: ActionFactory creates actions dynamically
-3. **Registry Pattern**: IntentionRegistry manages intentions
-4. **Strategy Pattern**: Each intention is a strategy for handling queries
-5. **Repository Pattern**: Services act as repositories for domain entities
+1. **Patrón de Servicio**: Encapsula la lógica de negocio en servicios
+2. **Patrón Factory**: ActionFactory crea acciones dinámicamente
+3. **Patrón Registry**: IntentionRegistry gestiona intenciones
+4. **Patrón Estrategia**: Cada intención es una estrategia para manejar consultas
+5. **Patrón Repositorio**: Los servicios actúan como repositorios para entidades de dominio
 
-## Security Considerations
+## Consideraciones de Seguridad
 
-- Input validation needed for production
-- Authentication/authorization not implemented (add JWT/OAuth)
-- CORS configured for development (tighten for production)
-- SQL injection protected by Prisma
-- XSS protection via React's default escaping
+- Se necesita validación de entrada para producción
+- Autenticación/autorización no implementada (agregar JWT/OAuth)
+- CORS configurado para desarrollo (restringir para producción)
+- Protección contra inyección SQL mediante Prisma
+- Protección XSS mediante el escape predeterminado de React
 
-## Scalability Considerations
+## Consideraciones de Escalabilidad
 
-### Current Implementation
-- Single server
-- SQLite database
-- Synchronous processing
+### Implementación Actual
+- Servidor único
+- Base de datos SQLite
+- Procesamiento síncrono
 
-### Future Improvements
-- Switch to PostgreSQL for production
-- Add caching layer (Redis)
-- Implement message queue for async operations
-- Add rate limiting
-- Implement pagination for large datasets
-- Add full-text search (Elasticsearch)
-- Microservices architecture for different intentions
+### Mejoras Futuras
+- Cambiar a PostgreSQL para producción
+- Agregar capa de caché (Redis)
+- Implementar cola de mensajes para operaciones asíncronas
+- Agregar limitación de velocidad
+- Implementar paginación para conjuntos de datos grandes
+- Agregar búsqueda de texto completo (Elasticsearch)
+- Arquitectura de microservicios para diferentes intenciones
 
-## Testing Strategy
+## Estrategia de Pruebas
 
 ### Backend
-- Unit tests for services
-- Integration tests for API endpoints
-- Test intention matching logic
+- Pruebas unitarias para servicios
+- Pruebas de integración para endpoints de API
+- Probar la lógica de coincidencia de intenciones
 
 ### Frontend
-- Component unit tests
-- Integration tests with React Testing Library
-- E2E tests with Playwright
+- Pruebas unitarias de componentes
+- Pruebas de integración con React Testing Library
+- Pruebas E2E con Playwright
 
-## Monitoring and Observability
+## Monitoreo y Observabilidad
 
-Recommended additions:
-- Structured logging (Winston/Pino)
-- Application metrics (Prometheus)
-- Error tracking (Sentry)
-- API monitoring (DataDog/New Relic)
+Adiciones recomendadas:
+- Registro estructurado (Winston/Pino)
+- Métricas de aplicación (Prometheus)
+- Seguimiento de errores (Sentry)
+- Monitoreo de API (DataDog/New Relic)
 
-## Deployment
+## Despliegue
 
 ### Backend
 ```bash
@@ -261,15 +261,15 @@ npm start
 ```bash
 cd frontend
 npm run build
-# Serve dist/ with any static file server
+# Servir dist/ con cualquier servidor de archivos estáticos
 ```
 
-### Docker Support
-Consider adding:
-- Dockerfile for backend
-- Dockerfile for frontend
-- docker-compose.yml for orchestration
+### Soporte Docker
+Considerar agregar:
+- Dockerfile para backend
+- Dockerfile para frontend
+- docker-compose.yml para orquestación
 
-## Conclusion
+## Conclusión
 
-This architecture provides a solid foundation for a modular, extensible application. The intention system makes it easy to add new capabilities without modifying existing code, following the Open/Closed Principle. The clear separation of concerns ensures maintainability as the application grows.
+Esta arquitectura proporciona una base sólida para una aplicación modular y extensible. El sistema de intenciones facilita agregar nuevas capacidades sin modificar el código existente, siguiendo el Principio Abierto/Cerrado. La clara separación de preocupaciones garantiza la mantenibilidad a medida que la aplicación crece.

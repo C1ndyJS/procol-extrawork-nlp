@@ -1,36 +1,36 @@
-# ExtraWorks - Modular Web Application with NLP Action Search
+# ExtraWorks - Aplicación Web Modular con Búsqueda de Acciones NLP
 
-A modular web application with natural language processing capabilities for action search and execution.
+Una aplicación web modular con capacidades de procesamiento de lenguaje natural para búsqueda y ejecución de acciones.
 
-## Architecture
+## Arquitectura
 
 ### Backend (Node.js + Express + Prisma)
 
 ```
 backend/
 ├── src/
-│   ├── domain/              # Domain services
+│   ├── domain/              # Servicios de dominio
 │   │   ├── ExtraWorkService.ts
 │   │   └── ResourceService.ts
-│   ├── intentions/          # Extensible intention system
-│   │   ├── Intention.ts     # Base intention interface
+│   ├── intentions/          # Sistema de intenciones extensible
+│   │   ├── Intention.ts     # Interfaz de intención base
 │   │   ├── IntentionRegistry.ts
-│   │   └── modules/         # Individual intention modules
+│   │   └── modules/         # Módulos de intención individuales
 │   │       ├── CreateExtraWorkIntention.ts
 │   │       ├── SearchExtraWorkIntention.ts
 │   │       ├── UpdateExtraWorkIntention.ts
 │   │       ├── DeleteExtraWorkIntention.ts
 │   │       └── AddResourceIntention.ts
 │   ├── api/
-│   │   └── routes/          # REST API endpoints
+│   │   └── routes/          # Endpoints de API REST
 │   │       ├── extrawork.routes.ts
 │   │       ├── resource.routes.ts
 │   │       └── action.routes.ts
 │   ├── utils/
-│   │   └── ActionFactory.ts # Action factory pattern
-│   └── index.ts             # Server entry point
+│   │   └── ActionFactory.ts # Patrón factory de acciones
+│   └── index.ts             # Punto de entrada del servidor
 ├── prisma/
-│   └── schema.prisma        # Database schema
+│   └── schema.prisma        # Esquema de base de datos
 └── package.json
 ```
 
@@ -40,206 +40,206 @@ backend/
 frontend/
 ├── src/
 │   ├── components/
-│   │   ├── SearchBar.tsx    # NLP search interface
-│   │   └── ExtraWorkList.tsx # CRUD interface
+│   │   ├── SearchBar.tsx    # Interfaz de búsqueda NLP
+│   │   └── ExtraWorkList.tsx # Interfaz CRUD
 │   ├── services/
-│   │   └── api.ts           # API service layer
+│   │   └── api.ts           # Capa de servicio API
 │   ├── types/
-│   │   └── index.ts         # TypeScript types
-│   ├── App.tsx              # Main application
+│   │   └── index.ts         # Tipos de TypeScript
+│   ├── App.tsx              # Aplicación principal
 │   └── main.tsx
 └── package.json
 ```
 
-## Features
+## Características
 
-### 🎯 Modular Architecture
-- **Domain Services**: Separate services for ExtraWorks and Resources
-- **Intention System**: Each intention as an independent, pluggable module
-- **Action Factory**: Generates executable actions from natural language queries
+### 🎯 Arquitectura Modular
+- **Servicios de Dominio**: Servicios separados para ExtraWorks y Resources
+- **Sistema de Intenciones**: Cada intención como módulo independiente y conectable
+- **Action Factory**: Genera acciones ejecutables a partir de consultas en lenguaje natural
 
-### 🔍 Natural Language Processing
-- Search for actions using natural language queries
-- Intelligent intent matching with confidence scores
-- Execute actions directly from NLP queries
+### 🔍 Procesamiento de Lenguaje Natural
+- Buscar acciones usando consultas en lenguaje natural
+- Coincidencia inteligente de intenciones con puntajes de confianza
+- Ejecutar acciones directamente desde consultas NLP
 
-### 🛠️ REST API Endpoints
+### 🛠️ Endpoints de API REST
 
-#### ExtraWork CRUD
-- `GET /api/extraworks` - List all ExtraWorks
-- `GET /api/extraworks/:id` - Get ExtraWork by ID
-- `POST /api/extraworks` - Create new ExtraWork
-- `PUT /api/extraworks/:id` - Update ExtraWork
-- `DELETE /api/extraworks/:id` - Delete ExtraWork
+#### CRUD de ExtraWork
+- `GET /api/extraworks` - Listar todos los ExtraWorks
+- `GET /api/extraworks/:id` - Obtener ExtraWork por ID
+- `POST /api/extraworks` - Crear nuevo ExtraWork
+- `PUT /api/extraworks/:id` - Actualizar ExtraWork
+- `DELETE /api/extraworks/:id` - Eliminar ExtraWork
 
-#### Resource CRUD
-- `GET /api/resources` - List all Resources
-- `GET /api/resources/:id` - Get Resource by ID
-- `POST /api/resources` - Create new Resource
-- `PUT /api/resources/:id` - Update Resource
-- `DELETE /api/resources/:id` - Delete Resource
+#### CRUD de Resource
+- `GET /api/resources` - Listar todos los Resources
+- `GET /api/resources/:id` - Obtener Resource por ID
+- `POST /api/resources` - Crear nuevo Resource
+- `PUT /api/resources/:id` - Actualizar Resource
+- `DELETE /api/resources/:id` - Eliminar Resource
 
-#### Action Search & Execution
-- `POST /api/actions/search` - Search actions by natural language query
-- `POST /api/actions/execute` - Execute action from natural language
-- `POST /api/actions/execute/:intent` - Execute action by intent name
-- `GET /api/intentions` - List all registered intentions
+#### Búsqueda y Ejecución de Acciones
+- `POST /api/actions/search` - Buscar acciones por consulta en lenguaje natural
+- `POST /api/actions/execute` - Ejecutar acción desde lenguaje natural
+- `POST /api/actions/execute/:intent` - Ejecutar acción por nombre de intención
+- `GET /api/intentions` - Listar todas las intenciones registradas
 
-## Setup Instructions
+## Instrucciones de Configuración
 
-### Prerequisites
+### Prerrequisitos
 - Node.js 18+ 
-- npm or yarn
+- npm o yarn
 
-### Backend Setup
+### Configuración del Backend
 
-1. Navigate to backend directory:
+1. Navegar al directorio del backend:
 ```bash
 cd backend
 ```
 
-2. Install dependencies:
+2. Instalar dependencias:
 ```bash
 npm install
 ```
 
-3. Generate Prisma client:
+3. Generar cliente Prisma:
 ```bash
 npm run prisma:generate
 ```
 
-4. Run database migrations:
+4. Ejecutar migraciones de base de datos:
 ```bash
 npm run prisma:migrate
 ```
 
-5. Start the development server:
+5. Iniciar el servidor de desarrollo:
 ```bash
 npm run dev
 ```
 
-The backend will start on `http://localhost:3000`
+El backend se iniciará en `http://localhost:3000`
 
-### Frontend Setup
+### Configuración del Frontend
 
-1. Navigate to frontend directory:
+1. Navegar al directorio del frontend:
 ```bash
 cd frontend
 ```
 
-2. Install dependencies:
+2. Instalar dependencias:
 ```bash
 npm install
 ```
 
-3. Start the development server:
+3. Iniciar el servidor de desarrollo:
 ```bash
 npm run dev
 ```
 
-The frontend will start on `http://localhost:5173`
+El frontend se iniciará en `http://localhost:5173`
 
-## Usage
+## Uso
 
-### Using the Application
+### Usando la Aplicación
 
-1. **NLP Search Tab**: 
-   - Type natural language queries like "create new extrawork", "search tasks", "update extrawork"
-   - View matching actions with confidence scores
-   - Execute actions directly from the search results
+1. **Pestaña de Búsqueda NLP**: 
+   - Escribe consultas en lenguaje natural como "crear nuevo extrawork", "buscar tareas", "actualizar extrawork"
+   - Ve acciones coincidentes con puntajes de confianza
+   - Ejecuta acciones directamente desde los resultados de búsqueda
 
-2. **Manage ExtraWorks Tab**:
-   - View all ExtraWorks
-   - Create new ExtraWorks with title, description, status, and priority
-   - Delete existing ExtraWorks
+2. **Pestaña Administrar ExtraWorks**:
+   - Ver todos los ExtraWorks
+   - Crear nuevos ExtraWorks con título, descripción, estado y prioridad
+   - Eliminar ExtraWorks existentes
 
-### Example NLP Queries
+### Ejemplos de Consultas NLP
 
-- "create new task"
-- "search for extrawork"
-- "find all works"
-- "add a resource"
-- "update extrawork"
-- "delete task"
+- "crear nueva tarea"
+- "buscar extrawork"
+- "encontrar todos los trabajos"
+- "agregar un recurso"
+- "actualizar extrawork"
+- "eliminar tarea"
 
-## Extensibility
+## Extensibilidad
 
-### Adding New Intentions
+### Agregando Nuevas Intenciones
 
-1. Create a new intention module in `backend/src/intentions/modules/`:
+1. Crear un nuevo módulo de intención en `backend/src/intentions/modules/`:
 
 ```typescript
 import { BaseIntention } from '../Intention';
 
-export class MyCustomIntention extends BaseIntention {
-  name = 'my_custom_intent';
-  keywords = ['custom', 'action', 'keywords'];
-  description = 'Description of what this intention does';
+export class MiIntencionPersonalizada extends BaseIntention {
+  name = 'mi_intencion_personalizada';
+  keywords = ['personalizada', 'accion', 'palabras', 'clave'];
+  description = 'Descripción de lo que hace esta intención';
 
   constructor(private myService: MyService) {
     super();
   }
 
   async execute(params: any): Promise<any> {
-    // Implementation
+    // Implementación
     return {
       success: true,
       data: result,
-      message: 'Action completed'
+      message: 'Acción completada'
     };
   }
 }
 ```
 
-2. Register the intention in `backend/src/index.ts`:
+2. Registrar la intención en `backend/src/index.ts`:
 
 ```typescript
-intentionRegistry.register(new MyCustomIntention(myService));
+intentionRegistry.register(new MiIntencionPersonalizada(myService));
 ```
 
-## Technology Stack
+## Pila Tecnológica
 
 **Backend:**
-- Node.js & Express - Web framework
-- TypeScript - Type safety
-- Prisma ORM - Database ORM
-- SQLite - Database
+- Node.js & Express - Framework web
+- TypeScript - Seguridad de tipos
+- Prisma ORM - ORM de base de datos
+- SQLite - Base de datos
 
 **Frontend:**
-- React 18 - UI library
-- Vite - Build tool
-- TypeScript - Type safety
+- React 18 - Biblioteca de UI
+- Vite - Herramienta de compilación
+- TypeScript - Seguridad de tipos
 
-## API Health Check
+## Verificación de Salud de la API
 
-Check if the backend is running:
+Verifica si el backend está ejecutándose:
 ```
 GET http://localhost:3000/health
 ```
 
-## Database Schema
+## Esquema de Base de Datos
 
-- **ExtraWork**: Main work items with title, description, status, and priority
-- **Resource**: Resources attached to ExtraWorks (files, links, etc.)
-- **Action**: Registered actions with intents and keywords
+- **ExtraWork**: Elementos de trabajo principales con título, descripción, estado y prioridad
+- **Resource**: Recursos adjuntos a ExtraWorks (archivos, enlaces, etc.)
+- **Action**: Acciones registradas con intenciones y palabras clave
 
-## Development
+## Desarrollo
 
-### Project Structure Philosophy
+### Filosofía de Estructura del Proyecto
 
-The project follows a modular, domain-driven design:
+El proyecto sigue un diseño modular orientado al dominio:
 
-1. **Domain Layer**: Business logic and data access (Services)
-2. **Intention Layer**: Natural language understanding (Intentions)
-3. **API Layer**: HTTP endpoints and routing
-4. **UI Layer**: React components and state management
+1. **Capa de Dominio**: Lógica de negocio y acceso a datos (Servicios)
+2. **Capa de Intenciones**: Comprensión del lenguaje natural (Intenciones)
+3. **Capa de API**: Endpoints HTTP y enrutamiento
+4. **Capa de UI**: Componentes React y gestión de estado
 
-This separation ensures:
-- Easy testing and maintenance
-- Clear separation of concerns
-- Simple extension with new features
-- Minimal coupling between layers
+Esta separación garantiza:
+- Fácil prueba y mantenimiento
+- Clara separación de preocupaciones
+- Extensión simple con nuevas características
+- Acoplamiento mínimo entre capas
 
-## License
+## Licencia
 
 MIT

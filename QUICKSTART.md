@@ -1,22 +1,22 @@
-# Quick Start Guide
+# Guía de Inicio Rápido
 
-Get up and running with ExtraWorks in 5 minutes!
+¡Pon en marcha ExtraWorks en 5 minutos!
 
-## Prerequisites
+## Prerrequisitos
 
-- Node.js 18 or higher
-- npm or yarn
+- Node.js 18 o superior
+- npm o yarn
 
-## Installation
+## Instalación
 
-### 1. Clone the Repository
+### 1. Clonar el Repositorio
 
 ```bash
 git clone https://github.com/C1ndyJS/procol-extrawork-nlp.git
 cd procol-extrawork-nlp
 ```
 
-### 2. Setup Backend
+### 2. Configurar Backend
 
 ```bash
 cd backend
@@ -25,176 +25,176 @@ npm run prisma:generate
 npm run prisma:migrate
 ```
 
-### 3. Setup Frontend
+### 3. Configurar Frontend
 
 ```bash
 cd ../frontend
 npm install
 ```
 
-## Running the Application
+## Ejecutar la Aplicación
 
-### Start Backend (Terminal 1)
+### Iniciar Backend (Terminal 1)
 
 ```bash
 cd backend
 npm run dev
 ```
 
-The backend will start on http://localhost:3000
+El backend se iniciará en http://localhost:3000
 
-### Start Frontend (Terminal 2)
+### Iniciar Frontend (Terminal 2)
 
 ```bash
 cd frontend
 npm run dev
 ```
 
-The frontend will start on http://localhost:5173
+El frontend se iniciará en http://localhost:5173
 
-## Using the Application
+## Usar la Aplicación
 
-### 1. Natural Language Search
+### 1. Búsqueda en Lenguaje Natural
 
-1. Navigate to http://localhost:5173
-2. You'll see the "NLP Search" tab (default)
-3. Type a natural language query like:
-   - "create new task"
-   - "search extrawork"
-   - "find all works"
-4. Click "Search Actions"
-5. View matching actions with confidence scores
-6. Click "Execute" to run the action
+1. Navega a http://localhost:5173
+2. Verás la pestaña "NLP Search" (predeterminada)
+3. Escribe una consulta en lenguaje natural como:
+   - "crear nueva tarea"
+   - "buscar extrawork"
+   - "encontrar todos los trabajos"
+4. Haz clic en "Search Actions"
+5. Ve las acciones coincidentes con puntajes de confianza
+6. Haz clic en "Execute" para ejecutar la acción
 
-### 2. Manage ExtraWorks
+### 2. Administrar ExtraWorks
 
-1. Click the "Manage ExtraWorks" tab
-2. Click "New ExtraWork" to create a work item
-3. Fill in:
-   - Title (required)
-   - Description (required)
+1. Haz clic en la pestaña "Manage ExtraWorks"
+2. Haz clic en "New ExtraWork" para crear un elemento de trabajo
+3. Completa:
+   - Title (obligatorio)
+   - Description (obligatorio)
    - Status (pending/in-progress/completed)
    - Priority (low/medium/high)
-4. Click "Create ExtraWork"
-5. View all ExtraWorks in the list
-6. Click "Delete" to remove an ExtraWork
+4. Haz clic en "Create ExtraWork"
+5. Ve todos los ExtraWorks en la lista
+6. Haz clic en "Delete" para eliminar un ExtraWork
 
-## API Endpoints
+## Endpoints de API
 
-Test the API directly:
+Prueba la API directamente:
 
-### Health Check
+### Verificación de Salud
 ```bash
 curl http://localhost:3000/health
 ```
 
-### List All Intentions
+### Listar Todas las Intenciones
 ```bash
 curl http://localhost:3000/api/intentions
 ```
 
-### Search Actions
+### Buscar Acciones
 ```bash
 curl -X POST http://localhost:3000/api/actions/search \
   -H "Content-Type: application/json" \
-  -d '{"query": "create new task"}'
+  -d '{"query": "crear nueva tarea"}'
 ```
 
-### List ExtraWorks
+### Listar ExtraWorks
 ```bash
 curl http://localhost:3000/api/extraworks
 ```
 
-### Create ExtraWork
+### Crear ExtraWork
 ```bash
 curl -X POST http://localhost:3000/api/extraworks \
   -H "Content-Type: application/json" \
   -d '{
-    "title": "My Task",
-    "description": "Task description",
+    "title": "Mi Tarea",
+    "description": "Descripción de la tarea",
     "status": "pending",
     "priority": "high"
   }'
 ```
 
-### Execute Action by Intent
+### Ejecutar Acción por Intención
 ```bash
 curl -X POST http://localhost:3000/api/actions/execute/search_extrawork \
   -H "Content-Type: application/json" \
   -d '{"params": {}}'
 ```
 
-## Example Queries
+## Ejemplos de Consultas
 
-The NLP system recognizes these types of queries:
+El sistema NLP reconoce estos tipos de consultas:
 
-### Create Operations
-- "create new extrawork"
-- "add a task"
-- "new work item"
+### Operaciones de Creación
+- "crear nuevo extrawork"
+- "agregar una tarea"
+- "nuevo elemento de trabajo"
 
-### Search Operations
-- "search extrawork"
-- "find tasks"
-- "list all works"
+### Operaciones de Búsqueda
+- "buscar extrawork"
+- "encontrar tareas"
+- "listar todos los trabajos"
 
-### Update Operations
-- "update extrawork"
-- "modify task"
-- "edit work"
+### Operaciones de Actualización
+- "actualizar extrawork"
+- "modificar tarea"
+- "editar trabajo"
 
-### Delete Operations
-- "delete extrawork"
-- "remove task"
+### Operaciones de Eliminación
+- "eliminar extrawork"
+- "remover tarea"
 
-### Resource Operations
-- "add resource"
-- "attach file"
-- "add link"
+### Operaciones de Recursos
+- "agregar recurso"
+- "adjuntar archivo"
+- "agregar enlace"
 
-## Troubleshooting
+## Solución de Problemas
 
-### Backend won't start
-- Check that port 3000 is not in use
-- Ensure database migrations ran successfully
-- Check `backend/.env` file exists
+### El backend no inicia
+- Verifica que el puerto 3000 no esté en uso
+- Asegúrate de que las migraciones de base de datos se ejecutaron correctamente
+- Verifica que el archivo `backend/.env` exista
 
-### Frontend won't start
-- Check that port 5173 is not in use
-- Ensure dependencies are installed
-- Check `frontend/.env` file has correct API URL
+### El frontend no inicia
+- Verifica que el puerto 5173 no esté en uso
+- Asegúrate de que las dependencias estén instaladas
+- Verifica que `frontend/.env` tenga la URL correcta de la API
 
-### Database errors
-- Delete `backend/dev.db` and run migrations again:
+### Errores de base de datos
+- Elimina `backend/dev.db` y ejecuta las migraciones nuevamente:
   ```bash
   cd backend
   rm dev.db
   npm run prisma:migrate
   ```
 
-### Type errors in frontend
-- Clear Vite cache:
+### Errores de tipo en el frontend
+- Limpia el caché de Vite:
   ```bash
   cd frontend
   rm -rf node_modules/.vite
   npm run dev
   ```
 
-## Next Steps
+## Próximos Pasos
 
-1. Read [README.md](./README.md) for detailed documentation
-2. Check [ARCHITECTURE.md](./ARCHITECTURE.md) to understand the system design
-3. Try adding your own intention module (see ARCHITECTURE.md for guide)
-4. Explore the REST API endpoints
-5. Customize the UI components
+1. Lee [README.md](./README.md) para documentación detallada
+2. Consulta [ARCHITECTURE.md](./ARCHITECTURE.md) para entender el diseño del sistema
+3. Intenta agregar tu propio módulo de intención (ver guía en ARCHITECTURE.md)
+4. Explora los endpoints de la API REST
+5. Personaliza los componentes de la UI
 
-## Development Tips
+## Consejos de Desarrollo
 
-### Watch mode
-Both backend and frontend run in watch mode by default. Changes will auto-reload.
+### Modo de vigilancia
+Tanto el backend como el frontend se ejecutan en modo de vigilancia por defecto. Los cambios se recargarán automáticamente.
 
-### Database browser
-View the database with Prisma Studio:
+### Explorador de base de datos
+Ve la base de datos con Prisma Studio:
 ```bash
 cd backend
 npm run prisma:studio
