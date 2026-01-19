@@ -1,6 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { apiService } from '../services/api';
-import { ExtraWork } from '../types';
+
+type ExtraWork = {
+  id: string;
+  title: string;
+  description: string;
+  status: string;
+  priority: string;
+  createdAt: string;
+  updatedAt: string;
+  resources?: any[];
+};
 
 export const ExtraWorkList: React.FC = () => {
   const [extraWorks, setExtraWorks] = useState<ExtraWork[]>([]);

@@ -1,4 +1,4 @@
-export interface ExtraWork {
+export type ExtraWork = {
   id: string;
   title: string;
   description: string;
@@ -7,9 +7,9 @@ export interface ExtraWork {
   createdAt: string;
   updatedAt: string;
   resources?: Resource[];
-}
+};
 
-export interface Resource {
+export type Resource = {
   id: string;
   name: string;
   type: string;
@@ -18,17 +18,11 @@ export interface Resource {
   extraWorkId: string;
   createdAt: string;
   updatedAt: string;
-}
+};
 
-export interface Action {
-  intent: string;
-  score: number;
-  description: string;
-}
-
-export interface ApiResponse<T> {
+export type ApiResponse<T> = {
   success: boolean;
   data?: T;
   error?: string;
   message?: string;
-}
+};

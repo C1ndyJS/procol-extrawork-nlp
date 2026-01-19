@@ -1,4 +1,37 @@
-import { ExtraWork, Resource, Action, ApiResponse } from '../types';
+type ExtraWork = {
+  id: string;
+  title: string;
+  description: string;
+  status: string;
+  priority: string;
+  createdAt: string;
+  updatedAt: string;
+  resources?: Resource[];
+};
+
+type Resource = {
+  id: string;
+  name: string;
+  type: string;
+  url?: string;
+  metadata?: string;
+  extraWorkId: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type ApiResponse<T> = {
+  success: boolean;
+  data?: T;
+  error?: string;
+  message?: string;
+};
+
+type ActionItem = {
+  intent: string;
+  score: number;
+  description: string;
+};
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
@@ -58,8 +91,8 @@ class ApiService {
   }
 
   // Action endpoints
-  async searchActions(query: string, threshold?: number): Promise<ApiResponse<Action[]>> {
-    return this.request<Action[]>('/actions/search', {
+  async searchActions(query: string, threshold?: number): Promise<ApiResponse<ActionItem[]>> {
+    return this.request<ActionItem[]>('/actions/search', {
       method: 'POST',
       body: JSON.stringify({ query, threshold }),
     });

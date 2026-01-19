@@ -1,10 +1,15 @@
 import React, { useState } from 'react';
 import { apiService } from '../services/api';
-import { Action } from '../types';
+
+type ActionItem = {
+  intent: string;
+  score: number;
+  description: string;
+};
 
 export const SearchBar: React.FC = () => {
   const [query, setQuery] = useState('');
-  const [actions, setActions] = useState<Action[]>([]);
+  const [actions, setActions] = useState<ActionItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
 
@@ -26,7 +31,7 @@ export const SearchBar: React.FC = () => {
     }
   };
 
-  const handleExecute = async (action: Action) => {
+  const handleExecute = async (action: ActionItem) => {
     setLoading(true);
     setMessage('');
     
