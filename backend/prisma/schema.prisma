@@ -1,0 +1,43 @@
+// This is your Prisma schema file
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model ExtraWork {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  status      String   @default("pending")
+  priority    String   @default("medium")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  resources   Resource[]
+}
+
+model Resource {
+  id          String     @id @default(uuid())
+  name        String
+  type        String
+  url         String?
+  metadata    String?
+  extraWorkId String
+  extraWork   ExtraWork  @relation(fields: [extraWorkId], references: [id], onDelete: Cascade)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model Action {
+  id          String   @id @default(uuid())
+  intent      String
+  description String
+  keywords    String
+  handler     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
