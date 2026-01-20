@@ -13,12 +13,8 @@ export class ExtraWorkService {
   }
 
   async create(data: Prisma.ExtraWorkCreateInput): Promise<ExtraWork> {
-    const code = this.generateExtraWorkCode();
     return this.prisma.extraWork.create({ 
-      data: {
-        ...data,
-        code
-      }
+      data
     });
   }
 

@@ -19,10 +19,10 @@ export default function Header({ currentView, onNavigate }: HeaderProps) {
 
             <nav className="hidden md:flex gap-1">
               <NavButton
-                active={currentView === 'dashboard'}
-                onClick={() => onNavigate('dashboard')}
+                active={currentView === 'resources'}
+                onClick={() => onNavigate('resources')}
               >
-                Dashboard
+                Resources
               </NavButton>
               <NavButton
                 active={currentView === 'extraworks'}

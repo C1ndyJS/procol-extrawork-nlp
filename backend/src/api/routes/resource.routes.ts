@@ -14,7 +14,7 @@ export function createResourceRoutes(resourceService: ResourceService): Router {
     }
   });
 
-  // Get Resources by ExtraWork ID
+  // Get Resources by ExtraWork ID (must be before /:id route)
   router.get('/extrawork/:extraWorkId', async (req: Request, res: Response) => {
     try {
       const resources = await resourceService.findByExtraWorkId(req.params.extraWorkId);

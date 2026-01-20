@@ -14,7 +14,7 @@ export function createExtraWorkRoutes(extraWorkService: ExtraWorkService): Route
     }
   });
 
-  // Get ExtraWorks by status
+  // Get ExtraWorks by status (must be before /:id route)
   router.get('/status/:status', async (req: Request, res: Response) => {
     try {
       const extraWorks = await extraWorkService.findByStatus(req.params.status);
