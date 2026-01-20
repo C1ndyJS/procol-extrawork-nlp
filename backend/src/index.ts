@@ -10,7 +10,9 @@ import { CreateExtraWorkIntention } from './intentions/modules/CreateExtraWorkIn
 import { SearchExtraWorkIntention } from './intentions/modules/SearchExtraWorkIntention';
 import { UpdateExtraWorkIntention } from './intentions/modules/UpdateExtraWorkIntention';
 import { DeleteExtraWorkIntention } from './intentions/modules/DeleteExtraWorkIntention';
+import { ChangeExtraWorkStatusIntention } from './intentions/modules/ChangeExtraWorkStatusIntention';
 import { AddResourceIntention } from './intentions/modules/AddResourceIntention';
+import { CreateResourceIntention } from './intentions/modules/CreateResourceIntention';
 import { createExtraWorkRoutes } from './api/routes/extrawork.routes';
 import { createResourceRoutes } from './api/routes/resource.routes';
 import { createActionRoutes } from './api/routes/action.routes';
@@ -39,7 +41,9 @@ intentionRegistry.register(new CreateExtraWorkIntention(extraWorkService));
 intentionRegistry.register(new SearchExtraWorkIntention(extraWorkService));
 intentionRegistry.register(new UpdateExtraWorkIntention(extraWorkService));
 intentionRegistry.register(new DeleteExtraWorkIntention(extraWorkService));
+intentionRegistry.register(new ChangeExtraWorkStatusIntention(extraWorkService));
 intentionRegistry.register(new AddResourceIntention(resourceService));
+intentionRegistry.register(new CreateResourceIntention(resourceService));
 
 // Initialize action factory
 const actionFactory = new ActionFactory(intentionRegistry);

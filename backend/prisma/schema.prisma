@@ -5,20 +5,25 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
 model ExtraWork {
   id          String   @id @default(uuid())
+  code        String   @unique @default(cuid())
   title       String
   description String
   status      String   @default("pending")
   priority    String   @default("medium")
+  startDate   DateTime?
+  endDate     DateTime?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   resources   Resource[]
 }
+
+// Valid statuses: pending, in_progress, completed, cancelled, on_hold
 
 model Resource {
   id          String     @id @default(uuid())

@@ -8,7 +8,10 @@ export class ResourceService {
   }
 
   async create(data: Prisma.ResourceCreateInput): Promise<Resource> {
-    return this.prisma.resource.create({ data });
+    return this.prisma.resource.create({ 
+      data,
+      include: { extraWork: true }
+    });
   }
 
   async findAll(): Promise<Resource[]> {
@@ -26,18 +29,60 @@ export class ResourceService {
 
   async findByExtraWorkId(extraWorkId: string): Promise<Resource[]> {
     return this.prisma.resource.findMany({
-      where: { extraWorkId }
+      where: { extraWorkId },
+      include: { extraWork: true }
     });
   }
 
   async update(id: string, data: Prisma.ResourceUpdateInput): Promise<Resource> {
     return this.prisma.resource.update({
       where: { id },
-      data
+      data,
+      include: { extraWork: true }
     });
   }
 
   async delete(id: string): Promise<Resource> {
-    return this.prisma.resource.delete({ where: { id } });
+    return this.prisma.resource.delete({ 
+      where: { id },
+      include: { extraWork: true }
+    });
+  }
+
+  async assignToExtraWork(resourceId: string, extraWorkId: string): Promise<Resource> {
+    // Verify extrawork exists
+    const extraWork = await this.prisma.extraWork.findUnique({
+      where: { id: extraWorkId }
+    });
+
+    if (!extraWork) {
+      throw new Error(`ExtraWork with id ${extraWorkId} not found`);
+    }
+
+    return this.prisma.resource.update({
+      where: { id: resourceId },
+      data: { extraWorkId },
+      include: { extraWork: true }
+    });
+  }
+
+  async removeFromExtraWork(resourceId: string): Promise<Resource> {
+    return this.prisma.resource.update({
+      where: { id: resourceId },
+      data: { extraWorkId: '' },
+      include: { extraWork: true }
+    });
+  }
+
+  async search(query: string): Promise<Resource[]> {
+    return this.prisma.resource.findMany({
+      where: {
+        OR: [
+          { name: { contains: query } },
+          { type: { contains: query } }
+        ]
+      },
+      include: { extraWork: true }
+    });
   }
 }
