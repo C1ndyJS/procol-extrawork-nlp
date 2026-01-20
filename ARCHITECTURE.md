@@ -216,7 +216,7 @@ intentionRegistry.register(new MyIntention(myService));
 
 ### Implementación Actual
 - Servidor único
-- Base de datos SQLite
+- Base de datos MySQL
 - Procesamiento síncrono
 
 ### Mejoras Futuras
