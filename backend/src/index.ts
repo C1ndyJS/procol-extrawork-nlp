@@ -13,6 +13,11 @@ import { DeleteExtraWorkIntention } from './intentions/modules/DeleteExtraWorkIn
 import { ChangeExtraWorkStatusIntention } from './intentions/modules/ChangeExtraWorkStatusIntention';
 import { AddResourceIntention } from './intentions/modules/AddResourceIntention';
 import { CreateResourceIntention } from './intentions/modules/CreateResourceIntention';
+import { AssignResourceToExtraWorkIntention } from './intentions/modules/AssignResourceToExtraWorkIntention';
+import { OpenExtraWorkIntention } from './intentions/modules/OpenExtraWorkIntention';
+import { SearchResourceIntention } from './intentions/modules/SearchResourceIntention';
+import { UpdateResourceIntention } from './intentions/modules/UpdateResourceIntention';
+import { DeleteResourceIntention } from './intentions/modules/DeleteResourceIntention';
 import { createExtraWorkRoutes } from './api/routes/extrawork.routes';
 import { createResourceRoutes } from './api/routes/resource.routes';
 import { createActionRoutes } from './api/routes/action.routes';
@@ -44,6 +49,11 @@ intentionRegistry.register(new DeleteExtraWorkIntention(extraWorkService));
 intentionRegistry.register(new ChangeExtraWorkStatusIntention(extraWorkService));
 intentionRegistry.register(new AddResourceIntention(resourceService));
 intentionRegistry.register(new CreateResourceIntention(resourceService));
+intentionRegistry.register(new AssignResourceToExtraWorkIntention(resourceService, extraWorkService));
+intentionRegistry.register(new OpenExtraWorkIntention(extraWorkService));
+intentionRegistry.register(new SearchResourceIntention(resourceService));
+intentionRegistry.register(new UpdateResourceIntention(resourceService));
+intentionRegistry.register(new DeleteResourceIntention(resourceService));
 
 // Initialize action factory
 const actionFactory = new ActionFactory(intentionRegistry);

@@ -14,6 +14,22 @@ export function createExtraWorkRoutes(extraWorkService: ExtraWorkService): Route
     }
   });
 
+  // Search ExtraWorks
+  router.get('/search', async (req: Request, res: Response) => {
+    try {
+      const query = req.query.q as string;
+      
+      if (!query) {
+        return res.status(400).json({ success: false, error: 'Query parameter "q" is required' });
+      }
+
+      const extraWorks = await extraWorkService.search(query);
+      res.json({ success: true, data: extraWorks });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
   // Get ExtraWorks by status
   router.get('/status/:status', async (req: Request, res: Response) => {
     try {

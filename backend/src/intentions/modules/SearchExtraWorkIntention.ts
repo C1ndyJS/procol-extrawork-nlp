@@ -3,8 +3,8 @@ import { ExtraWorkService } from '../../domain/ExtraWorkService';
 
 export class SearchExtraWorkIntention extends BaseIntention {
   name = 'search_extrawork';
-  keywords = ['search', 'find', 'look', 'query', 'extrawork', 'list'];
-  description = 'Searches for ExtraWork items';
+  keywords = ['search', 'buscar', 'find', 'encontrar', 'look', 'ver', 'mostrar', 'query', 'extrawork', 'trabajo', 'trabajos', 'list', 'listar'];
+  description = 'Busca o lista ExtraWorks';
 
   constructor(private extraWorkService: ExtraWorkService) {
     super();

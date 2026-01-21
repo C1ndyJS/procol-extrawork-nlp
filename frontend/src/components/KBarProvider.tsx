@@ -1,3 +1,4 @@
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import {
   KBarProvider as Provider,
   KBarPortal,
@@ -7,9 +8,11 @@ import {
   useMatches,
   KBarResults,
   Action,
+  useKBar,
 } from 'kbar';
-import { Home, Briefcase, Settings, User, LogOut } from 'lucide-react';
+import { Home, Briefcase, Settings, User, LogOut, Plus, Search, FileText, Zap } from 'lucide-react';
 import { ViewType } from '../types';
+import { apiService, ActionSuggestion } from '../services/api';
 
 interface KBarProviderProps {
   children: React.ReactNode;
@@ -17,15 +20,18 @@ interface KBarProviderProps {
 }
 
 export default function KBarProvider({ children, onNavigate }: KBarProviderProps) {
-  const actions: Action[] = [
+  const [dynamicActions, setDynamicActions] = useState<Action[]>([]);
+
+  // Static navigation actions - Memoized
+  const staticActions: Action[] = useMemo(() => [
     {
-      id: 'dashboard',
-      name: 'Dashboard',
-      shortcut: ['d'],
-      keywords: 'home inicio principal',
+      id: 'recursos',
+      name: 'Recursos',
+      shortcut: ['r'],
+      keywords: 'recursos personal empleados trabajadores',
       section: 'Navegación',
-      perform: () => onNavigate('dashboard'),
-      icon: <Home className="w-5 h-5" />,
+      perform: () => onNavigate('recursos'),
+      icon: <User className="w-5 h-5" />,
     },
     {
       id: 'extraworks',
@@ -63,15 +69,124 @@ export default function KBarProvider({ children, onNavigate }: KBarProviderProps
       perform: () => alert('Cerrando sesión...'),
       icon: <LogOut className="w-5 h-5" />,
     },
-  ];
+  ], [onNavigate]);
+
+  // Get icon for intent - Memoized
+  const getIconForIntent = useCallback((intent: string) => {
+    switch (intent) {
+      case 'create_extrawork':
+        return <Plus className="w-5 h-5" />;
+      case 'search_extrawork':
+      case 'search_resource':
+        return <Search className="w-5 h-5" />;
+      case 'open_extrawork':
+        return <Briefcase className="w-5 h-5" />;
+      case 'assign_resource_to_extrawork':
+        return <Zap className="w-5 h-5" />;
+      case 'create_resource':
+        return <Plus className="w-5 h-5" />;
+      default:
+        return <FileText className="w-5 h-5" />;
+    }
+  }, []);
+
+  // Convert backend suggestions to KBar actions - Memoized
+  const convertToKBarActions = useCallback((suggestions: ActionSuggestion[]): Action[] => {
+    return suggestions.map((suggestion, index) => {
+      const action: Action = {
+        id: `intention-${suggestion.intent}-${index}-${Date.now()}`,
+        name: suggestion.title || suggestion.description,
+        subtitle: suggestion.subtitle,
+        keywords: suggestion.description,
+        section: 'Acciones Inteligentes',
+        perform: async () => {
+          try {
+            const result = await apiService.executeActionByIntent(
+              suggestion.intent,
+              suggestion.params || {}
+            );
+
+            if (result.success) {
+              // Handle navigation for open_extrawork
+              if (suggestion.intent === 'open_extrawork' && result.extraWorkId) {
+                onNavigate('extraworks');
+                alert(`Abriendo ExtraWork ${result.extraWorkId}`);
+              } else if (result.navigate) {
+                onNavigate('extraworks');
+              } else {
+                alert(result.message || 'Acción ejecutada correctamente');
+              }
+
+              // Handle data if needed
+              if (result.data) {
+                console.log('Action result:', result.data);
+              }
+            } else {
+              alert(result.error || 'Error al ejecutar la acción');
+            }
+          } catch (error: any) {
+            console.error('Error executing action:', error);
+            alert(error.message || 'Error al ejecutar la acción');
+          }
+        },
+        icon: getIconForIntent(suggestion.intent),
+      };
+      return action;
+    });
+  }, [onNavigate, getIconForIntent]);
+
+  // Watch for search query changes and fetch dynamic actions
+  const SearchWatcher = () => {
+    const { query } = useKBar((state) => ({ query: state.searchQuery }));
+
+    useEffect(() => {
+      // Validate that query is a string before processing
+      if (!query || typeof query !== 'string') {
+        if (dynamicActions.length > 0) {
+          setDynamicActions([]);
+        }
+        return;
+      }
+
+      const trimmedQuery = query.trim();
+
+      // Only search if query is not empty and has at least 2 characters
+      if (trimmedQuery.length >= 2) {
+        const debounceTimer = setTimeout(async () => {
+          try {
+            const suggestions = await apiService.searchActions(trimmedQuery, 0.2);
+            const actions = convertToKBarActions(suggestions);
+            setDynamicActions(actions);
+          } catch (error) {
+            console.error('Error fetching actions:', error);
+            setDynamicActions([]);
+          }
+        }, 300); // Debounce for 300ms
+
+        return () => clearTimeout(debounceTimer);
+      } else {
+        if (dynamicActions.length > 0) {
+          setDynamicActions([]);
+        }
+      }
+    }, [query, convertToKBarActions]);
+
+    return null;
+  };
+
+  // Combine static and dynamic actions
+  const allActions = useMemo(() => {
+    return [...staticActions, ...dynamicActions];
+  }, [staticActions, dynamicActions]);
 
   return (
-    <Provider 
-      actions={actions}
+    <Provider
+      actions={allActions}
       options={{
-        toggleShortcut: '$mod+b',
+        toggleShortcut: '$mod+k',
       }}
     >
+      <SearchWatcher />
       <KBarPortal>
         <KBarPositioner className="bg-black/50 backdrop-blur-sm z-50">
           <KBarAnimator className="max-w-2xl w-full bg-white rounded-xl shadow-2xl overflow-hidden">

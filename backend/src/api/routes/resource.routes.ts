@@ -14,6 +14,22 @@ export function createResourceRoutes(resourceService: ResourceService): Router {
     }
   });
 
+  // Search Resources
+  router.get('/search', async (req: Request, res: Response) => {
+    try {
+      const query = req.query.q as string;
+      
+      if (!query) {
+        return res.status(400).json({ success: false, error: 'Query parameter "q" is required' });
+      }
+
+      const resources = await resourceService.search(query);
+      res.json({ success: true, data: resources });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
   // Get Resources by ExtraWork ID
   router.get('/extrawork/:extraWorkId', async (req: Request, res: Response) => {
     try {
@@ -86,6 +102,29 @@ export function createResourceRoutes(resourceService: ResourceService): Router {
       const resource = await resourceService.assignToExtraWork(
         req.params.id,
         req.params.extraWorkId
+      );
+      res.json({ 
+        success: true, 
+        data: resource, 
+        message: `Resource assigned to ExtraWork successfully` 
+      });
+    } catch (error: any) {
+      res.status(400).json({ success: false, error: error.message });
+    }
+  });
+
+  // Alternative: Assign Resource to ExtraWork via PUT
+  router.put('/:id/assign', async (req: Request, res: Response) => {
+    try {
+      const { extraWorkId } = req.body;
+      
+      if (!extraWorkId) {
+        return res.status(400).json({ success: false, error: 'extraWorkId is required' });
+      }
+
+      const resource = await resourceService.assignToExtraWork(
+        req.params.id,
+        extraWorkId
       );
       res.json({ 
         success: true, 

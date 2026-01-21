@@ -3,8 +3,8 @@ import { ExtraWorkService } from '../../domain/ExtraWorkService';
 
 export class CreateExtraWorkIntention extends BaseIntention {
   name = 'create_extrawork';
-  keywords = ['create', 'new', 'add', 'extrawork', 'work', 'task'];
-  description = 'Creates a new ExtraWork item';
+  keywords = ['create', 'crear', 'new', 'nuevo', 'add', 'añadir', 'agregar', 'extrawork', 'trabajo', 'work', 'task', 'tarea'];
+  description = 'Crea un nuevo ExtraWork';
 
   constructor(private extraWorkService: ExtraWorkService) {
     super();

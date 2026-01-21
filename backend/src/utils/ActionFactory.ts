@@ -1,4 +1,5 @@
 import { IntentionRegistry } from '../intentions/IntentionRegistry';
+import { TextParser, ParsedQuery } from './TextParser';
 
 export interface Action {
   intent: string;
@@ -6,23 +7,57 @@ export interface Action {
   execute(): Promise<any>;
 }
 
+export interface ActionSuggestion {
+  intent: string;
+  score: number;
+  description: string;
+  title?: string;
+  subtitle?: string;
+  params?: any;
+}
+
 export class ActionFactory {
-  constructor(private intentionRegistry: IntentionRegistry) {}
+  private textParser: TextParser;
+
+  constructor(private intentionRegistry: IntentionRegistry) {
+    this.textParser = new TextParser();
+  }
 
   createAction(query: string, params: any = {}): Action | null {
-    const match = this.intentionRegistry.findBestMatch(query);
+    // Parse the query to extract entities
+    const parsed = this.textParser.parse(query);
     
+    // Try to match intention from parsed query first
+    let match: { intention: any; score: number } | null = null;
+    
+    if (parsed.intention) {
+      const intention = this.intentionRegistry.getIntention(parsed.intention);
+      if (intention) {
+        match = { intention, score: 1.0 };
+      }
+    }
+    
+    // Fallback to keyword matching if parsing didn't work
     if (!match || match.score < 0.3) {
-      return null;
+      match = this.intentionRegistry.findBestMatch(query);
+      if (!match || match.score < 0.3) {
+        return null;
+      }
     }
 
     const intention = match.intention;
 
+    // Merge parsed params with provided params (provided params take precedence)
+    const extractedParams = parsed.intention 
+      ? this.textParser.extractParams(parsed, parsed.intention)
+      : {};
+    const finalParams = { ...extractedParams, ...params };
+
     return {
       intent: intention.name,
-      params,
+      params: finalParams,
       execute: async () => {
-        return await intention.execute(params);
+        return await intention.execute(finalParams);
       }
     };
   }
@@ -43,13 +78,102 @@ export class ActionFactory {
     };
   }
 
-  searchActions(query: string, threshold: number = 0.3): Array<{ intent: string; score: number; description: string }> {
+  searchActions(query: string, threshold: number = 0.3): ActionSuggestion[] {
+    // Parse query to extract entities
+    const parsed = this.textParser.parse(query);
+    
+    // Get all matching intentions
     const matches = this.intentionRegistry.findAllMatches(query, threshold);
     
-    return matches.map(match => ({
-      intent: match.intention.name,
-      score: match.score,
-      description: match.intention.description
-    }));
+    // If parser found a specific intention, prioritize it
+    if (parsed.intention) {
+      const parsedIntention = this.intentionRegistry.getIntention(parsed.intention);
+      if (parsedIntention) {
+        const existingMatch = matches.find(m => m.intention.name === parsed.intention);
+        if (!existingMatch) {
+          matches.unshift({ intention: parsedIntention, score: 0.9 });
+        } else {
+          // Boost score for parsed intention
+          existingMatch.score = Math.max(existingMatch.score, 0.9);
+        }
+      }
+    }
+
+    // Sort by score (descending)
+    matches.sort((a, b) => b.score - a.score);
+
+    return matches.map(match => {
+      const intention = match.intention;
+      const params = parsed.intention === intention.name
+        ? this.textParser.extractParams(parsed, intention.name)
+        : {};
+
+      // Generate human-readable title and subtitle
+      const { title, subtitle } = this.generateActionLabels(intention.name, params, parsed);
+
+      return {
+        intent: intention.name,
+        score: match.score,
+        description: intention.description,
+        title,
+        subtitle,
+        params
+      };
+    });
+  }
+
+  private generateActionLabels(intent: string, params: any, parsed: ParsedQuery): { title: string; subtitle?: string } {
+    switch (intent) {
+      case 'create_extrawork':
+        if (params.title) {
+          return {
+            title: `Crear ExtraWork: "${params.title}"`,
+            subtitle: 'Crear un nuevo ExtraWork'
+          };
+        }
+        return { title: 'Crear nuevo ExtraWork' };
+
+      case 'search_extrawork':
+        if (params.query) {
+          return {
+            title: `Buscar ExtraWorks: "${params.query}"`,
+            subtitle: 'Buscar en todos los ExtraWorks'
+          };
+        }
+        return { title: 'Ver todos los ExtraWorks' };
+
+      case 'open_extrawork':
+        if (params.code || params.id) {
+          return {
+            title: `Abrir ${params.code || params.id}`,
+            subtitle: 'Abrir detalle del ExtraWork'
+          };
+        }
+        return { title: 'Abrir ExtraWork' };
+
+      case 'assign_resource_to_extrawork':
+        if (params.resourceName && params.extraWorkId) {
+          return {
+            title: `Asignar "${params.resourceName}" a ${params.extraWorkId}`,
+            subtitle: 'Asignar recurso a ExtraWork'
+          };
+        }
+        return { title: 'Asignar recurso a ExtraWork' };
+
+      case 'search_resource':
+        if (params.query) {
+          return {
+            title: `Buscar recursos: "${params.query}"`,
+            subtitle: 'Buscar en todos los recursos'
+          };
+        }
+        return { title: 'Ver todos los recursos' };
+
+      case 'create_resource':
+        return { title: 'Crear nuevo recurso' };
+
+      default:
+        return { title: intent };
+    }
   }
 }
