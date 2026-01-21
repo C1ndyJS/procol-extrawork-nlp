@@ -8,9 +8,10 @@ import {
   useMatches,
   KBarResults,
   Action,
-  useKBar,
+  useRegisterActions,
+  Priority,
 } from 'kbar';
-import { Home, Briefcase, Settings, User, LogOut, Plus, Search, FileText, Zap } from 'lucide-react';
+import { Briefcase, Settings, User, LogOut, Plus, Search, FileText, Zap } from 'lucide-react';
 import { ViewType } from '../types';
 import { apiService, ActionSuggestion } from '../services/api';
 
@@ -19,8 +20,19 @@ interface KBarProviderProps {
   onNavigate: (view: ViewType) => void;
 }
 
+// Global state for search query (to share between Provider options and DynamicActionsHandler)
+let globalSetSearchQuery: ((q: string) => void) | null = null;
+
 export default function KBarProvider({ children, onNavigate }: KBarProviderProps) {
-  const [dynamicActions, setDynamicActions] = useState<Action[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Store setter globally so it can be called from options callback
+  useEffect(() => {
+    globalSetSearchQuery = setSearchQuery;
+    return () => {
+      globalSetSearchQuery = null;
+    };
+  }, []);
 
   // Static navigation actions - Memoized
   const staticActions: Action[] = useMemo(() => [
@@ -43,10 +55,36 @@ export default function KBarProvider({ children, onNavigate }: KBarProviderProps
       icon: <Briefcase className="w-5 h-5" />,
     },
     {
+      id: 'create-extrawork',
+      name: 'Crear ExtraWork',
+      shortcut: ['c', 'e'],
+      keywords: 'crear nuevo extrawork trabajo añadir agregar new create',
+      section: 'Crear',
+      subtitle: 'Crear un nuevo trabajo extra',
+      perform: async () => {
+        onNavigate('extraworks');
+        window.dispatchEvent(new CustomEvent('openCreateExtraWork'));
+      },
+      icon: <Plus className="w-5 h-5" />,
+    },
+    {
+      id: 'create-resource',
+      name: 'Crear Recurso',
+      shortcut: ['c', 'r'],
+      keywords: 'crear nuevo recurso personal empleado añadir agregar new create resource',
+      section: 'Crear',
+      subtitle: 'Crear un nuevo recurso',
+      perform: async () => {
+        onNavigate('recursos');
+        window.dispatchEvent(new CustomEvent('openCreateResource'));
+      },
+      icon: <Plus className="w-5 h-5" />,
+    },
+    {
       id: 'profile',
       name: 'Ver Perfil',
-      shortcut: ['p'],
-      keywords: 'profile usuario cuenta',
+      shortcut: ['n'],
+      keywords: 'profile usuario cuenta perfil',
       section: 'Acciones',
       perform: () => alert('Abriendo perfil...'),
       icon: <User className="w-5 h-5" />,
@@ -55,7 +93,7 @@ export default function KBarProvider({ children, onNavigate }: KBarProviderProps
       id: 'settings',
       name: 'Configuración',
       shortcut: ['s'],
-      keywords: 'settings ajustes preferencias',
+      keywords: 'settings ajustes preferencias configuracion',
       section: 'Acciones',
       perform: () => alert('Abriendo configuración...'),
       icon: <Settings className="w-5 h-5" />,
@@ -64,14 +102,55 @@ export default function KBarProvider({ children, onNavigate }: KBarProviderProps
       id: 'logout',
       name: 'Cerrar Sesión',
       shortcut: ['l', 'o'],
-      keywords: 'logout salir exit',
+      keywords: 'logout salir exit cerrar sesion',
       section: 'Acciones',
       perform: () => alert('Cerrando sesión...'),
       icon: <LogOut className="w-5 h-5" />,
     },
   ], [onNavigate]);
 
-  // Get icon for intent - Memoized
+  // KBar options with onQueryChange callback
+  const options = useMemo(() => ({
+    toggleShortcut: '$mod+k',
+    callbacks: {
+      onQueryChange: (query: string) => {
+        console.log('[KBar] Query changed:', query);
+        if (globalSetSearchQuery) {
+          globalSetSearchQuery(query);
+        }
+      },
+    },
+  }), []);
+
+  return (
+    <Provider actions={staticActions} options={options}>
+      <DynamicActionsHandler onNavigate={onNavigate} searchQuery={searchQuery} />
+      <KBarPortal>
+        <KBarPositioner className="bg-black/50 backdrop-blur-sm z-50">
+          <KBarAnimator className="max-w-2xl w-full bg-white rounded-xl shadow-2xl overflow-hidden">
+            <div className="p-4 border-b border-gray-200">
+              <KBarSearch className="w-full px-4 py-3 text-base bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+            </div>
+            <RenderResults />
+          </KBarAnimator>
+        </KBarPositioner>
+      </KBarPortal>
+      {children}
+    </Provider>
+  );
+}
+
+// Component to handle dynamic actions from backend
+function DynamicActionsHandler({
+  onNavigate,
+  searchQuery
+}: {
+  onNavigate: (view: ViewType) => void;
+  searchQuery: string;
+}) {
+  const [dynamicActions, setDynamicActions] = useState<Action[]>([]);
+
+  // Get icon for intent
   const getIconForIntent = useCallback((intent: string) => {
     switch (intent) {
       case 'create_extrawork':
@@ -80,46 +159,112 @@ export default function KBarProvider({ children, onNavigate }: KBarProviderProps
       case 'search_resource':
         return <Search className="w-5 h-5" />;
       case 'open_extrawork':
+      case 'open_extrawork_for_resource':
         return <Briefcase className="w-5 h-5" />;
       case 'assign_resource_to_extrawork':
+      case 'assign_resource_suggestion':
         return <Zap className="w-5 h-5" />;
       case 'create_resource':
         return <Plus className="w-5 h-5" />;
+      case 'view_resource':
+        return <User className="w-5 h-5" />;
       default:
         return <FileText className="w-5 h-5" />;
     }
   }, []);
 
-  // Convert backend suggestions to KBar actions - Memoized
-  const convertToKBarActions = useCallback((suggestions: ActionSuggestion[]): Action[] => {
+  // Convert backend suggestions to KBar actions
+  const convertToKBarActions = useCallback((suggestions: ActionSuggestion[], query: string): Action[] => {
     return suggestions.map((suggestion, index) => {
       const action: Action = {
-        id: `intention-${suggestion.intent}-${index}-${Date.now()}`,
+        id: `dynamic-${suggestion.intent}-${index}-${Date.now()}`,
         name: suggestion.title || suggestion.description,
         subtitle: suggestion.subtitle,
-        keywords: suggestion.description,
+        // Include the search query in keywords so KBar matches it
+        keywords: `${query} ${suggestion.description}`,
         section: 'Acciones Inteligentes',
+        priority: Priority.HIGH,
         perform: async () => {
           try {
+            console.log('[KBar] Performing action:', suggestion.intent, 'with params:', suggestion.params);
+            // Special handling for create_extrawork - navigate and open form with pre-filled data
+            if (suggestion.intent === 'create_extrawork') {
+              const title = suggestion.params?.title || '';
+              console.log('[KBar] Opening create extrawork with title:', title);
+              onNavigate('extraworks');
+              // Small delay to ensure navigation completes before dispatching event
+              setTimeout(() => {
+                window.dispatchEvent(new CustomEvent('openCreateExtraWork', {
+                  detail: { title }
+                }));
+              }, 100);
+              return;
+            }
+
+            // Special handling for create_resource
+            if (suggestion.intent === 'create_resource') {
+              onNavigate('recursos');
+              window.dispatchEvent(new CustomEvent('openCreateResource', {
+                detail: { name: suggestion.params?.name || '' }
+              }));
+              return;
+            }
+
+            // Special handling for view_resource - navigate to recursos and highlight/select the resource
+            if (suggestion.intent === 'view_resource') {
+              onNavigate('recursos');
+              setTimeout(() => {
+                window.dispatchEvent(new CustomEvent('highlightResource', {
+                  detail: {
+                    resourceId: suggestion.params?.resourceId,
+                    resourceName: suggestion.params?.resourceName
+                  }
+                }));
+              }, 100);
+              return;
+            }
+
+            // Special handling for open_extrawork_for_resource - navigate to extraworks
+            if (suggestion.intent === 'open_extrawork_for_resource') {
+              onNavigate('extraworks');
+              setTimeout(() => {
+                window.dispatchEvent(new CustomEvent('highlightExtraWork', {
+                  detail: {
+                    extraWorkId: suggestion.params?.extraWorkId,
+                    extraWorkTitle: suggestion.params?.extraWorkTitle
+                  }
+                }));
+              }, 100);
+              return;
+            }
+
+            // Special handling for assign_resource_suggestion - navigate to recursos with assignment mode
+            if (suggestion.intent === 'assign_resource_suggestion') {
+              onNavigate('recursos');
+              setTimeout(() => {
+                window.dispatchEvent(new CustomEvent('openAssignResource', {
+                  detail: {
+                    resourceId: suggestion.params?.resourceId,
+                    resourceName: suggestion.params?.resourceName
+                  }
+                }));
+              }, 100);
+              return;
+            }
+
+            // For other intents, execute via API
             const result = await apiService.executeActionByIntent(
               suggestion.intent,
               suggestion.params || {}
             );
 
             if (result.success) {
-              // Handle navigation for open_extrawork
-              if (suggestion.intent === 'open_extrawork' && result.extraWorkId) {
+              if (suggestion.intent === 'open_extrawork') {
                 onNavigate('extraworks');
-                alert(`Abriendo ExtraWork ${result.extraWorkId}`);
-              } else if (result.navigate) {
+              } else if (suggestion.intent === 'search_extrawork') {
                 onNavigate('extraworks');
-              } else {
-                alert(result.message || 'Acción ejecutada correctamente');
-              }
-
-              // Handle data if needed
-              if (result.data) {
-                console.log('Action result:', result.data);
+              } else if (suggestion.intent === 'search_resource') {
+                onNavigate('recursos');
               }
             } else {
               alert(result.error || 'Error al ejecutar la acción');
@@ -135,71 +280,35 @@ export default function KBarProvider({ children, onNavigate }: KBarProviderProps
     });
   }, [onNavigate, getIconForIntent]);
 
-  // Watch for search query changes and fetch dynamic actions
-  const SearchWatcher = () => {
-    const { query } = useKBar((state) => ({ query: state.searchQuery }));
+  // Fetch dynamic actions when searchQuery changes
+  useEffect(() => {
+    const trimmedQuery = searchQuery.trim();
 
-    useEffect(() => {
-      // Validate that query is a string before processing
-      if (!query || typeof query !== 'string') {
-        if (dynamicActions.length > 0) {
+    if (trimmedQuery.length >= 2) {
+      const debounceTimer = setTimeout(async () => {
+        try {
+          console.log('[KBar] Fetching actions for:', trimmedQuery);
+          const suggestions = await apiService.searchActions(trimmedQuery, 0.1);
+          console.log('[KBar] Backend returned:', suggestions);
+          const actions = convertToKBarActions(suggestions, trimmedQuery);
+          console.log('[KBar] Converted to actions:', actions.length);
+          setDynamicActions(actions);
+        } catch (error) {
+          console.error('[KBar] Error fetching actions:', error);
           setDynamicActions([]);
         }
-        return;
-      }
+      }, 300);
 
-      const trimmedQuery = query.trim();
+      return () => clearTimeout(debounceTimer);
+    } else {
+      setDynamicActions([]);
+    }
+  }, [searchQuery, convertToKBarActions]);
 
-      // Only search if query is not empty and has at least 2 characters
-      if (trimmedQuery.length >= 2) {
-        const debounceTimer = setTimeout(async () => {
-          try {
-            const suggestions = await apiService.searchActions(trimmedQuery, 0.2);
-            const actions = convertToKBarActions(suggestions);
-            setDynamicActions(actions);
-          } catch (error) {
-            console.error('Error fetching actions:', error);
-            setDynamicActions([]);
-          }
-        }, 300); // Debounce for 300ms
+  // Register dynamic actions with KBar
+  useRegisterActions(dynamicActions, [dynamicActions]);
 
-        return () => clearTimeout(debounceTimer);
-      } else {
-        if (dynamicActions.length > 0) {
-          setDynamicActions([]);
-        }
-      }
-    }, [query, convertToKBarActions]);
-
-    return null;
-  };
-
-  // Combine static and dynamic actions
-  const allActions = useMemo(() => {
-    return [...staticActions, ...dynamicActions];
-  }, [staticActions, dynamicActions]);
-
-  return (
-    <Provider
-      actions={allActions}
-      options={{
-        toggleShortcut: '$mod+k',
-      }}
-    >
-      <SearchWatcher />
-      <KBarPortal>
-        <KBarPositioner className="bg-black/50 backdrop-blur-sm z-50">
-          <KBarAnimator className="max-w-2xl w-full bg-white rounded-xl shadow-2xl overflow-hidden">
-            <div className="p-4 border-b border-gray-200">
-              <KBarSearch className="w-full px-4 py-3 text-base bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
-            </div>
-            <RenderResults />
-          </KBarAnimator>
-        </KBarPositioner>
-      </KBarPortal>
-      {children}
-    </Provider>
-  );
+  return null;
 }
 
 function RenderResults() {

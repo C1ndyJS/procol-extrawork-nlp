@@ -26,15 +26,16 @@ model ExtraWork {
 // Valid statuses: pending, in_progress, completed, cancelled, on_hold
 
 model Resource {
-  id          String     @id @default(uuid())
-  name        String
-  type        String
-  url         String?
-  metadata    String?
-  extraWorkId String
-  extraWork   ExtraWork  @relation(fields: [extraWorkId], references: [id], onDelete: Cascade)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id           String     @id @default(uuid())
+  name         String
+  type         String
+  availability String     @default("available")
+  url          String?
+  metadata     String?
+  extraWorkId  String?
+  extraWork    ExtraWork? @relation(fields: [extraWorkId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
 }
 
 model Action {

@@ -8,14 +8,80 @@ export default function Recursos() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingResource, setEditingResource] = useState<Resource | null>(null);
+  const [highlightedResourceId, setHighlightedResourceId] = useState<string | null>(null);
+  const [notification, setNotification] = useState<{message: string; type: 'success' | 'error'} | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     type: '',
     availability: 'available',
   });
 
+  const showNotification = (message: string, type: 'success' | 'error') => {
+    setNotification({ message, type });
+    setTimeout(() => setNotification(null), 3000);
+  };
+
+  // Load resources on mount
   useEffect(() => {
     loadRecursos();
+  }, []);
+
+  // Event listeners for KBar actions
+  useEffect(() => {
+    // Listen for KBar create event with optional pre-filled data
+    const handleOpenCreate = (event: Event) => {
+      const customEvent = event as CustomEvent<{ name?: string; type?: string }>;
+      const prefilledName = customEvent.detail?.name || '';
+      const prefilledType = customEvent.detail?.type || '';
+
+      setEditingResource(null);
+      setFormData({
+        name: prefilledName,
+        type: prefilledType,
+        availability: 'available',
+      });
+      setShowModal(true);
+    };
+
+    // Listen for highlight resource event from KBar
+    const handleHighlightResource = (event: Event) => {
+      const customEvent = event as CustomEvent<{ resourceId?: string; resourceName?: string }>;
+      const resourceId = customEvent.detail?.resourceId;
+      if (resourceId) {
+        setHighlightedResourceId(resourceId);
+        showNotification(`Recurso "${customEvent.detail?.resourceName}" seleccionado`, 'success');
+        // Clear highlight after 3 seconds
+        setTimeout(() => setHighlightedResourceId(null), 3000);
+        // Scroll to the highlighted resource
+        setTimeout(() => {
+          const element = document.getElementById(`resource-${resourceId}`);
+          element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
+      }
+    };
+
+    // Listen for assign resource event from KBar
+    const handleOpenAssignResource = (event: Event) => {
+      const customEvent = event as CustomEvent<{ resourceId?: string; resourceName?: string }>;
+      const resourceId = customEvent.detail?.resourceId;
+      if (resourceId) {
+        // Find resource and open edit modal
+        setEditingResource(null);
+        // We need to fetch the resource or use a ref, for now just highlight it
+        setHighlightedResourceId(resourceId);
+        showNotification(`Selecciona el recurso para asignarlo`, 'success');
+        setTimeout(() => setHighlightedResourceId(null), 3000);
+      }
+    };
+
+    window.addEventListener('openCreateResource', handleOpenCreate);
+    window.addEventListener('highlightResource', handleHighlightResource);
+    window.addEventListener('openAssignResource', handleOpenAssignResource);
+    return () => {
+      window.removeEventListener('openCreateResource', handleOpenCreate);
+      window.removeEventListener('highlightResource', handleHighlightResource);
+      window.removeEventListener('openAssignResource', handleOpenAssignResource);
+    };
   }, []);
 
   const loadRecursos = async () => {
@@ -25,7 +91,7 @@ export default function Recursos() {
       setRecursos(data);
     } catch (error) {
       console.error('Error cargando recursos:', error);
-      alert('Error al cargar recursos');
+      showNotification('Error al cargar recursos', 'error');
     } finally {
       setLoading(false);
     }
@@ -35,7 +101,7 @@ export default function Recursos() {
     e.preventDefault();
     
     if (!formData.name.trim() || !formData.type.trim()) {
-      alert('Por favor completa todos los campos');
+      showNotification('Por favor completa todos los campos', 'error');
       return;
     }
 
@@ -55,10 +121,10 @@ export default function Recursos() {
       setFormData({ name: '', type: '', availability: 'available' });
       setEditingResource(null);
       loadRecursos();
-      alert(editingResource ? 'Recurso actualizado' : 'Recurso creado correctamente');
+      showNotification(editingResource ? 'Recurso actualizado correctamente' : 'Recurso creado correctamente', 'success');
     } catch (error: any) {
       console.error('Error guardando recurso:', error);
-      alert(error.message || 'Error al guardar recurso');
+      showNotification(error.message || 'Error al guardar recurso', 'error');
     }
   };
 
@@ -78,10 +144,10 @@ export default function Recursos() {
     try {
       await apiService.executeActionByIntent('delete_resource', { id });
       loadRecursos();
-      alert('Recurso eliminado correctamente');
+      showNotification('Recurso eliminado correctamente', 'success');
     } catch (error: any) {
       console.error('Error eliminando recurso:', error);
-      alert(error.message || 'Error al eliminar recurso');
+      showNotification(error.message || 'Error al eliminar recurso', 'error');
     }
   };
 
@@ -192,7 +258,15 @@ export default function Recursos() {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {recursos.map((resource) => (
-                  <tr key={resource.id} className="hover:bg-gray-50 transition-colors">
+                  <tr
+                    key={resource.id}
+                    id={`resource-${resource.id}`}
+                    className={`transition-colors ${
+                      highlightedResourceId === resource.id
+                        ? 'bg-blue-100 ring-2 ring-blue-500'
+                        : 'hover:bg-gray-50'
+                    }`}
+                  >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-xs font-mono text-gray-500">{resource.id.slice(0, 8)}...</div>
                     </td>
@@ -320,6 +394,28 @@ export default function Recursos() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      
+      {/* Notificación Toast */}
+      {notification && (
+        <div className="fixed bottom-4 right-4 z-50 animate-slide-in">
+          <div className={`rounded-lg shadow-lg px-6 py-4 flex items-center gap-3 ${
+            notification.type === 'success' 
+              ? 'bg-green-600 text-white' 
+              : 'bg-red-600 text-white'
+          }`}>
+            {notification.type === 'success' ? (
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            ) : (
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            )}
+            <p className="font-medium">{notification.message}</p>
           </div>
         </div>
       )}

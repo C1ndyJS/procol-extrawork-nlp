@@ -6,7 +6,7 @@ import Extraworks from './components/Extraworks';
 import { ViewType } from './types';
 
 function App() {
-  const [currentView, setCurrentView] = useState<ViewType>('recursos');
+  const [currentView, setCurrentView] = useState<ViewType>('extraworks');
 
   return (
     <KBarProvider onNavigate={setCurrentView}>
