@@ -8,11 +8,17 @@ export default function Recursos() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingResource, setEditingResource] = useState<Resource | null>(null);
+  const [notification, setNotification] = useState<{message: string; type: 'success' | 'error'} | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     type: '',
     availability: 'available',
   });
+
+  const showNotification = (message: string, type: 'success' | 'error') => {
+    setNotification({ message, type });
+    setTimeout(() => setNotification(null), 3000);
+  };
 
   useEffect(() => {
     loadRecursos();
@@ -25,7 +31,7 @@ export default function Recursos() {
       setRecursos(data);
     } catch (error) {
       console.error('Error cargando recursos:', error);
-      alert('Error al cargar recursos');
+      showNotification('Error al cargar recursos', 'error');
     } finally {
       setLoading(false);
     }
@@ -35,7 +41,7 @@ export default function Recursos() {
     e.preventDefault();
     
     if (!formData.name.trim() || !formData.type.trim()) {
-      alert('Por favor completa todos los campos');
+      showNotification('Por favor completa todos los campos', 'error');
       return;
     }
 
@@ -55,10 +61,10 @@ export default function Recursos() {
       setFormData({ name: '', type: '', availability: 'available' });
       setEditingResource(null);
       loadRecursos();
-      alert(editingResource ? 'Recurso actualizado' : 'Recurso creado correctamente');
+      showNotification(editingResource ? 'Recurso actualizado correctamente' : 'Recurso creado correctamente', 'success');
     } catch (error: any) {
       console.error('Error guardando recurso:', error);
-      alert(error.message || 'Error al guardar recurso');
+      showNotification(error.message || 'Error al guardar recurso', 'error');
     }
   };
 
@@ -78,10 +84,10 @@ export default function Recursos() {
     try {
       await apiService.executeActionByIntent('delete_resource', { id });
       loadRecursos();
-      alert('Recurso eliminado correctamente');
+      showNotification('Recurso eliminado correctamente', 'success');
     } catch (error: any) {
       console.error('Error eliminando recurso:', error);
-      alert(error.message || 'Error al eliminar recurso');
+      showNotification(error.message || 'Error al eliminar recurso', 'error');
     }
   };
 
@@ -320,6 +326,28 @@ export default function Recursos() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      
+      {/* Notificación Toast */}
+      {notification && (
+        <div className="fixed bottom-4 right-4 z-50 animate-slide-in">
+          <div className={`rounded-lg shadow-lg px-6 py-4 flex items-center gap-3 ${
+            notification.type === 'success' 
+              ? 'bg-green-600 text-white' 
+              : 'bg-red-600 text-white'
+          }`}>
+            {notification.type === 'success' ? (
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            ) : (
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            )}
+            <p className="font-medium">{notification.message}</p>
           </div>
         </div>
       )}

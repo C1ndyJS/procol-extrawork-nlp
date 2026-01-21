@@ -4,31 +4,38 @@ import { ResourceService } from '../../domain/ResourceService';
 export class CreateResourceIntention extends BaseIntention {
   name = 'create_resource';
   keywords = ['create', 'add', 'new', 'resource', 'assign', 'allocate'];
-  description = 'Creates and assigns a new resource to an ExtraWork';
+  description = 'Creates a new resource optionally assigned to an ExtraWork';
 
   constructor(private resourceService: ResourceService) {
     super();
   }
 
-  async execute(params: { name: string; type: string; extraWorkId: string; url?: string; metadata?: string }): Promise<any> {
-    const { name, type, extraWorkId, url, metadata } = params;
+  async execute(params: { name: string; type: string; availability?: string; extraWorkId?: string; url?: string; metadata?: string }): Promise<any> {
+    const { name, type, availability, extraWorkId, url, metadata } = params;
     
-    if (!name || !type || !extraWorkId) {
-      throw new Error('Name, type, and extraWorkId are required');
+    if (!name || !type) {
+      throw new Error('Name and type are required');
     }
 
-    const resource = await this.resourceService.create({
+    const createData: any = {
       name,
       type,
+      availability: availability || 'available',
       url: url || undefined,
       metadata: metadata || undefined,
-      extraWork: { connect: { id: extraWorkId } }
-    });
+    };
+
+    // Solo conectar a ExtraWork si se proporciona un ID
+    if (extraWorkId) {
+      createData.extraWork = { connect: { id: extraWorkId } };
+    }
+
+    const resource = await this.resourceService.create(createData);
 
     return {
       success: true,
       data: resource,
-      message: `Resource "${name}" created and assigned successfully`
+      message: `Resource "${name}" created successfully`
     };
   }
 }
