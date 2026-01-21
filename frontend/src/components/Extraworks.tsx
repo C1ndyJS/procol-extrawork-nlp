@@ -9,6 +9,7 @@ export default function Extraworks() {
   const [showModal, setShowModal] = useState(false);
   const [formStep, setFormStep] = useState(1);
   const [editingExtrawork, setEditingExtrawork] = useState<ExtraWork | null>(null);
+  const [highlightedExtraWorkId, setHighlightedExtraWorkId] = useState<string | null>(null);
   const [availableResources, setAvailableResources] = useState<Resource[]>([]);
   const [selectedResourceIds, setSelectedResourceIds] = useState<string[]>([]);
   const [notification, setNotification] = useState<{message: string; type: 'success' | 'error'} | null>(null);
@@ -47,8 +48,29 @@ export default function Extraworks() {
       setShowModal(true);
     };
 
+    // Listen for highlight ExtraWork event from KBar
+    const handleHighlightExtraWork = (event: Event) => {
+      const customEvent = event as CustomEvent<{ extraWorkId?: string; extraWorkTitle?: string }>;
+      const extraWorkId = customEvent.detail?.extraWorkId;
+      if (extraWorkId) {
+        setHighlightedExtraWorkId(extraWorkId);
+        showNotification(`ExtraWork "${customEvent.detail?.extraWorkTitle}" seleccionado`, 'success');
+        // Clear highlight after 3 seconds
+        setTimeout(() => setHighlightedExtraWorkId(null), 3000);
+        // Scroll to the highlighted extrawork
+        setTimeout(() => {
+          const element = document.getElementById(`extrawork-${extraWorkId}`);
+          element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
+      }
+    };
+
     window.addEventListener('openCreateExtraWork', handleOpenCreate);
-    return () => window.removeEventListener('openCreateExtraWork', handleOpenCreate);
+    window.addEventListener('highlightExtraWork', handleHighlightExtraWork);
+    return () => {
+      window.removeEventListener('openCreateExtraWork', handleOpenCreate);
+      window.removeEventListener('highlightExtraWork', handleHighlightExtraWork);
+    };
   }, []);
 
   const loadExtraworks = async () => {
@@ -320,7 +342,15 @@ export default function Extraworks() {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {extraworks.map((extrawork) => (
-                  <tr key={extrawork.id} className="hover:bg-gray-50 transition-colors">
+                  <tr
+                    key={extrawork.id}
+                    id={`extrawork-${extrawork.id}`}
+                    className={`transition-colors ${
+                      highlightedExtraWorkId === extrawork.id
+                        ? 'bg-blue-100 ring-2 ring-blue-500'
+                        : 'hover:bg-gray-50'
+                    }`}
+                  >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-xs font-mono text-gray-500">{extrawork.id ? extrawork.id.slice(0, 8) + '...' : 'N/A'}</div>
                     </td>

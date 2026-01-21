@@ -159,11 +159,15 @@ function DynamicActionsHandler({
       case 'search_resource':
         return <Search className="w-5 h-5" />;
       case 'open_extrawork':
+      case 'open_extrawork_for_resource':
         return <Briefcase className="w-5 h-5" />;
       case 'assign_resource_to_extrawork':
+      case 'assign_resource_suggestion':
         return <Zap className="w-5 h-5" />;
       case 'create_resource':
         return <Plus className="w-5 h-5" />;
+      case 'view_resource':
+        return <User className="w-5 h-5" />;
       default:
         return <FileText className="w-5 h-5" />;
     }
@@ -203,6 +207,48 @@ function DynamicActionsHandler({
               window.dispatchEvent(new CustomEvent('openCreateResource', {
                 detail: { name: suggestion.params?.name || '' }
               }));
+              return;
+            }
+
+            // Special handling for view_resource - navigate to recursos and highlight/select the resource
+            if (suggestion.intent === 'view_resource') {
+              onNavigate('recursos');
+              setTimeout(() => {
+                window.dispatchEvent(new CustomEvent('highlightResource', {
+                  detail: {
+                    resourceId: suggestion.params?.resourceId,
+                    resourceName: suggestion.params?.resourceName
+                  }
+                }));
+              }, 100);
+              return;
+            }
+
+            // Special handling for open_extrawork_for_resource - navigate to extraworks
+            if (suggestion.intent === 'open_extrawork_for_resource') {
+              onNavigate('extraworks');
+              setTimeout(() => {
+                window.dispatchEvent(new CustomEvent('highlightExtraWork', {
+                  detail: {
+                    extraWorkId: suggestion.params?.extraWorkId,
+                    extraWorkTitle: suggestion.params?.extraWorkTitle
+                  }
+                }));
+              }, 100);
+              return;
+            }
+
+            // Special handling for assign_resource_suggestion - navigate to recursos with assignment mode
+            if (suggestion.intent === 'assign_resource_suggestion') {
+              onNavigate('recursos');
+              setTimeout(() => {
+                window.dispatchEvent(new CustomEvent('openAssignResource', {
+                  detail: {
+                    resourceId: suggestion.params?.resourceId,
+                    resourceName: suggestion.params?.resourceName
+                  }
+                }));
+              }, 100);
               return;
             }
 

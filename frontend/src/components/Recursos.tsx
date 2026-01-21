@@ -8,6 +8,7 @@ export default function Recursos() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingResource, setEditingResource] = useState<Resource | null>(null);
+  const [highlightedResourceId, setHighlightedResourceId] = useState<string | null>(null);
   const [notification, setNotification] = useState<{message: string; type: 'success' | 'error'} | null>(null);
   const [formData, setFormData] = useState({
     name: '',
@@ -20,9 +21,13 @@ export default function Recursos() {
     setTimeout(() => setNotification(null), 3000);
   };
 
+  // Load resources on mount
   useEffect(() => {
     loadRecursos();
+  }, []);
 
+  // Event listeners for KBar actions
+  useEffect(() => {
     // Listen for KBar create event with optional pre-filled data
     const handleOpenCreate = (event: Event) => {
       const customEvent = event as CustomEvent<{ name?: string; type?: string }>;
@@ -38,8 +43,45 @@ export default function Recursos() {
       setShowModal(true);
     };
 
+    // Listen for highlight resource event from KBar
+    const handleHighlightResource = (event: Event) => {
+      const customEvent = event as CustomEvent<{ resourceId?: string; resourceName?: string }>;
+      const resourceId = customEvent.detail?.resourceId;
+      if (resourceId) {
+        setHighlightedResourceId(resourceId);
+        showNotification(`Recurso "${customEvent.detail?.resourceName}" seleccionado`, 'success');
+        // Clear highlight after 3 seconds
+        setTimeout(() => setHighlightedResourceId(null), 3000);
+        // Scroll to the highlighted resource
+        setTimeout(() => {
+          const element = document.getElementById(`resource-${resourceId}`);
+          element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
+      }
+    };
+
+    // Listen for assign resource event from KBar
+    const handleOpenAssignResource = (event: Event) => {
+      const customEvent = event as CustomEvent<{ resourceId?: string; resourceName?: string }>;
+      const resourceId = customEvent.detail?.resourceId;
+      if (resourceId) {
+        // Find resource and open edit modal
+        setEditingResource(null);
+        // We need to fetch the resource or use a ref, for now just highlight it
+        setHighlightedResourceId(resourceId);
+        showNotification(`Selecciona el recurso para asignarlo`, 'success');
+        setTimeout(() => setHighlightedResourceId(null), 3000);
+      }
+    };
+
     window.addEventListener('openCreateResource', handleOpenCreate);
-    return () => window.removeEventListener('openCreateResource', handleOpenCreate);
+    window.addEventListener('highlightResource', handleHighlightResource);
+    window.addEventListener('openAssignResource', handleOpenAssignResource);
+    return () => {
+      window.removeEventListener('openCreateResource', handleOpenCreate);
+      window.removeEventListener('highlightResource', handleHighlightResource);
+      window.removeEventListener('openAssignResource', handleOpenAssignResource);
+    };
   }, []);
 
   const loadRecursos = async () => {
@@ -216,7 +258,15 @@ export default function Recursos() {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {recursos.map((resource) => (
-                  <tr key={resource.id} className="hover:bg-gray-50 transition-colors">
+                  <tr
+                    key={resource.id}
+                    id={`resource-${resource.id}`}
+                    className={`transition-colors ${
+                      highlightedResourceId === resource.id
+                        ? 'bg-blue-100 ring-2 ring-blue-500'
+                        : 'hover:bg-gray-50'
+                    }`}
+                  >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-xs font-mono text-gray-500">{resource.id.slice(0, 8)}...</div>
                     </td>

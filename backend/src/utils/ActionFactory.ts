@@ -1,5 +1,6 @@
 import { IntentionRegistry } from '../intentions/IntentionRegistry';
 import { TextParser, ParsedQuery } from './TextParser';
+import { ResourceService } from '../domain/ResourceService';
 
 export interface Action {
   intent: string;
@@ -18,9 +19,14 @@ export interface ActionSuggestion {
 
 export class ActionFactory {
   private textParser: TextParser;
+  private resourceService: ResourceService | null = null;
 
   constructor(private intentionRegistry: IntentionRegistry) {
     this.textParser = new TextParser();
+  }
+
+  setResourceService(resourceService: ResourceService): void {
+    this.resourceService = resourceService;
   }
 
   createAction(query: string, params: any = {}): Action | null {
@@ -78,13 +84,13 @@ export class ActionFactory {
     };
   }
 
-  searchActions(query: string, threshold: number = 0.3): ActionSuggestion[] {
+  async searchActions(query: string, threshold: number = 0.3): Promise<ActionSuggestion[]> {
     // Parse query to extract entities
     const parsed = this.textParser.parse(query);
-    
+
     // Get all matching intentions
     const matches = this.intentionRegistry.findAllMatches(query, threshold);
-    
+
     // If parser found a specific intention, prioritize it
     if (parsed.intention) {
       const parsedIntention = this.intentionRegistry.getIntention(parsed.intention);
@@ -102,7 +108,7 @@ export class ActionFactory {
     // Sort by score (descending)
     matches.sort((a, b) => b.score - a.score);
 
-    return matches.map(match => {
+    const suggestions: ActionSuggestion[] = matches.map(match => {
       const intention = match.intention;
       const params = parsed.intention === intention.name
         ? this.textParser.extractParams(parsed, intention.name)
@@ -120,6 +126,89 @@ export class ActionFactory {
         params
       };
     });
+
+    // Search for resources by name if query doesn't match a specific intention
+    if (this.resourceService && query.trim().length >= 2) {
+      const resourceSuggestions = await this.searchResourcesByName(query.trim());
+      suggestions.push(...resourceSuggestions);
+    }
+
+    // Sort all suggestions by score
+    suggestions.sort((a, b) => b.score - a.score);
+
+    return suggestions;
+  }
+
+  /**
+   * Search for resources by name and generate contextual action suggestions
+   */
+  private async searchResourcesByName(query: string): Promise<ActionSuggestion[]> {
+    if (!this.resourceService) return [];
+
+    try {
+      // Cast to any to access the included extraWork relation
+      const resources = await this.resourceService.search(query) as any[];
+      const suggestions: ActionSuggestion[] = [];
+
+      for (const resource of resources) {
+        const availability = resource.availability || 'available';
+        const availabilityLabel = availability === 'available' ? 'Disponible'
+          : availability === 'busy' ? 'Ocupado'
+          : 'No disponible';
+
+        // Suggestion: View/open resource details
+        suggestions.push({
+          intent: 'view_resource',
+          score: 0.85,
+          description: `Ver detalles del recurso "${resource.name}"`,
+          title: `Ver recurso: "${resource.name}"`,
+          subtitle: `Tipo: ${resource.type} | ${availabilityLabel}`,
+          params: {
+            resourceId: resource.id,
+            resourceName: resource.name,
+            resourceType: resource.type,
+            availability: availability
+          }
+        });
+
+        // If resource is assigned to an ExtraWork, suggest viewing that ExtraWork
+        if (resource.extraWorkId && resource.extraWork) {
+          suggestions.push({
+            intent: 'open_extrawork_for_resource',
+            score: 0.8,
+            description: `Ver ExtraWork donde está asignado "${resource.name}"`,
+            title: `Ver ExtraWork de "${resource.name}"`,
+            subtitle: `ExtraWork: ${resource.extraWork.title}`,
+            params: {
+              resourceId: resource.id,
+              resourceName: resource.name,
+              extraWorkId: resource.extraWorkId,
+              extraWorkTitle: resource.extraWork.title
+            }
+          });
+        }
+
+        // Suggestion: Assign resource to an ExtraWork (if available)
+        if (availability === 'available' && !resource.extraWorkId) {
+          suggestions.push({
+            intent: 'assign_resource_suggestion',
+            score: 0.7,
+            description: `Asignar "${resource.name}" a un ExtraWork`,
+            title: `Asignar "${resource.name}" a ExtraWork`,
+            subtitle: 'Recurso disponible para asignación',
+            params: {
+              resourceId: resource.id,
+              resourceName: resource.name
+            }
+          });
+        }
+      }
+
+      return suggestions;
+    } catch (error) {
+      console.error('Error searching resources by name:', error);
+      return [];
+    }
   }
 
   private generateActionLabels(intent: string, params: any, parsed: ParsedQuery): { title: string; subtitle?: string } {

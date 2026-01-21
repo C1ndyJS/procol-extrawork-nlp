@@ -57,6 +57,7 @@ intentionRegistry.register(new DeleteResourceIntention(resourceService));
 
 // Initialize action factory
 const actionFactory = new ActionFactory(intentionRegistry);
+actionFactory.setResourceService(resourceService);
 
 // Health check endpoint
 app.get('/health', (req: Request, res: Response) => {

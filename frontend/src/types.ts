@@ -19,5 +19,5 @@ export interface Resource {
   extraWorkId?: string | null;
   createdAt: string;
   updatedAt: string;
-  extraWork?: ExtraWork | null;
+  extraWorks?: ExtraWork[];
 }
