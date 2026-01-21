@@ -22,6 +22,24 @@ export default function Recursos() {
 
   useEffect(() => {
     loadRecursos();
+
+    // Listen for KBar create event with optional pre-filled data
+    const handleOpenCreate = (event: Event) => {
+      const customEvent = event as CustomEvent<{ name?: string; type?: string }>;
+      const prefilledName = customEvent.detail?.name || '';
+      const prefilledType = customEvent.detail?.type || '';
+
+      setEditingResource(null);
+      setFormData({
+        name: prefilledName,
+        type: prefilledType,
+        availability: 'available',
+      });
+      setShowModal(true);
+    };
+
+    window.addEventListener('openCreateResource', handleOpenCreate);
+    return () => window.removeEventListener('openCreateResource', handleOpenCreate);
   }, []);
 
   const loadRecursos = async () => {

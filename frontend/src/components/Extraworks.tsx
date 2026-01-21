@@ -27,6 +27,28 @@ export default function Extraworks() {
   useEffect(() => {
     loadExtraworks();
     loadAvailableResources();
+
+    // Listen for KBar create event with optional pre-filled data
+    const handleOpenCreate = (event: Event) => {
+      const customEvent = event as CustomEvent<{ title?: string }>;
+      console.log('[Extraworks] Received openCreateExtraWork event:', customEvent.detail);
+      const prefilledTitle = customEvent.detail?.title || '';
+      console.log('[Extraworks] Pre-filled title:', prefilledTitle);
+
+      setEditingExtrawork(null);
+      setFormData({
+        title: prefilledTitle,
+        description: '',
+        status: 'pending',
+        priority: 'medium',
+      });
+      setSelectedResourceIds([]);
+      setFormStep(1);
+      setShowModal(true);
+    };
+
+    window.addEventListener('openCreateExtraWork', handleOpenCreate);
+    return () => window.removeEventListener('openCreateExtraWork', handleOpenCreate);
   }, []);
 
   const loadExtraworks = async () => {

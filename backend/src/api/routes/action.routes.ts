@@ -14,6 +14,8 @@ export function createActionRoutes(actionFactory: ActionFactory): Router {
       }
 
       const actions = actionFactory.searchActions(query, threshold);
+      console.log('[API] Search actions for query:', query);
+      console.log('[API] Actions found:', actions.map(a => ({ intent: a.intent, title: a.title, params: a.params })));
       res.json({ success: true, data: actions });
     } catch (error: any) {
       res.status(500).json({ success: false, error: error.message });

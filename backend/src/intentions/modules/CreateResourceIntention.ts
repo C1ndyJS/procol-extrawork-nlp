@@ -3,8 +3,8 @@ import { ResourceService } from '../../domain/ResourceService';
 
 export class CreateResourceIntention extends BaseIntention {
   name = 'create_resource';
-  keywords = ['create', 'add', 'new', 'resource', 'assign', 'allocate'];
-  description = 'Creates a new resource optionally assigned to an ExtraWork';
+  keywords = ['create', 'crear', 'add', 'añadir', 'agregar', 'new', 'nuevo', 'nueva', 'resource', 'recurso', 'personal', 'empleado', 'trabajador'];
+  description = 'Crea un nuevo recurso';
 
   constructor(private resourceService: ResourceService) {
     super();

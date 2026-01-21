@@ -145,14 +145,16 @@ export class TextParser {
 
   private extractTitle(query: string): string | undefined {
     // Patterns to extract title after create keywords
+    // Using greedy capture (.+) instead of lazy (.+?) for better matching
     const patterns = [
-      /\bcrear\s+(?:un\s+)?(?:extrawork|trabajo|ew)\s+["']?(.+?)["']?\s*$/i,
-      /\bcrear\s+["']?(.+?)["']?\s*$/i,
-      /\bnuevo\s+(?:extrawork|trabajo|ew)\s+["']?(.+?)["']?\s*$/i,
-      /\bnuevo\s+["']?(.+?)["']?\s*$/i,
-      /\bañadir\s+(?:un\s+)?(?:extrawork|trabajo|ew)\s+["']?(.+?)["']?\s*$/i,
-      /\bagregar\s+(?:un\s+)?(?:extrawork|trabajo|ew)\s+["']?(.+?)["']?\s*$/i,
-      /\bquiero\s+crear\s+(?:un\s+)?(?:extrawork|trabajo)\s+["']?(.+?)["']?\s*$/i
+      /\bcrear\s+(?:un\s+)?(?:extrawork|trabajo|ew)\s+["']?(.+)["']?\s*$/i,
+      /\bnuevo\s+(?:extrawork|trabajo|ew)\s+["']?(.+)["']?\s*$/i,
+      /\bañadir\s+(?:un\s+)?(?:extrawork|trabajo|ew)\s+["']?(.+)["']?\s*$/i,
+      /\bagregar\s+(?:un\s+)?(?:extrawork|trabajo|ew)\s+["']?(.+)["']?\s*$/i,
+      /\bquiero\s+crear\s+(?:un\s+)?(?:extrawork|trabajo)\s+["']?(.+)["']?\s*$/i,
+      // Fallback: if "crear" is followed by anything that's not "extrawork/trabajo/ew"
+      /\bcrear\s+(?!(?:un\s+)?(?:extrawork|trabajo|ew|recurso|resource)\b)["']?(.+)["']?\s*$/i,
+      /\bnuevo\s+(?!(?:extrawork|trabajo|ew|recurso|resource)\b)["']?(.+)["']?\s*$/i,
     ];
 
     for (const pattern of patterns) {
@@ -161,7 +163,7 @@ export class TextParser {
         // Remove quotes and extra whitespace
         const title = match[1].replace(/^["']|["']$/g, '').trim();
         // Only return if it's not too generic
-        if (title && title.length > 2 && !['extrawork', 'trabajo', 'ew'].includes(title.toLowerCase())) {
+        if (title && title.length > 2 && !['extrawork', 'trabajo', 'ew', 'recurso', 'resource'].includes(title.toLowerCase())) {
           return title;
         }
       }
