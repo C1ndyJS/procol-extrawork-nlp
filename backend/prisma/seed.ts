@@ -15,7 +15,7 @@ async function main() {
   // Create ExtraWorks
   const extraWork1 = await prisma.extraWork.create({
     data: {
-      code: 'EW-001-FACHADA',
+      id: 'EW-001-FACHADA',
       title: 'Renovación Fachada Edificio Principal',
       description: 'Trabajo adicional para la renovación completa de la fachada del edificio principal, incluye pintura, reparación de grietas y mejoras estructurales.',
       status: 'in_progress',
@@ -27,7 +27,7 @@ async function main() {
 
   const extraWork2 = await prisma.extraWork.create({
     data: {
-      code: 'EW-002-HVAC',
+      id: 'EW-002-HVAC',
       title: 'Instalación Sistema HVAC Adicional',
       description: 'Instalación de un sistema de climatización adicional en las nuevas áreas de expansión del edificio.',
       status: 'pending',
@@ -39,7 +39,7 @@ async function main() {
 
   const extraWork3 = await prisma.extraWork.create({
     data: {
-      code: 'EW-003-PARKING',
+      id: 'EW-003-PARKING',
       title: 'Ampliación Estacionamiento',
       description: 'Construcción de 50 plazas adicionales de estacionamiento subterráneo con sistema de seguridad.',
       status: 'pending',
@@ -51,7 +51,7 @@ async function main() {
 
   const extraWork4 = await prisma.extraWork.create({
     data: {
-      code: 'EW-004-RED',
+      id: 'EW-004-RED',
       title: 'Cableado de Red Estructurada',
       description: 'Instalación de cableado de red estructurada categoría 6A en todos los pisos del edificio.',
       status: 'completed',
@@ -63,7 +63,7 @@ async function main() {
 
   const extraWork5 = await prisma.extraWork.create({
     data: {
-      code: 'EW-005-SOLAR',
+      id: 'EW-005-SOLAR',
       title: 'Sistema de Paneles Solares',
       description: 'Instalación de sistema fotovoltaico en la azotea para generación de energía renovable.',
       status: 'on_hold',
@@ -75,7 +75,7 @@ async function main() {
 
   const extraWork6 = await prisma.extraWork.create({
     data: {
-      code: 'EW-006-ASCENSORES',
+      id: 'EW-006-ASCENSORES',
       title: 'Modernización Ascensores',
       description: 'Actualización completa del sistema de ascensores incluyendo controles inteligentes y eficiencia energética.',
       status: 'in_progress',
