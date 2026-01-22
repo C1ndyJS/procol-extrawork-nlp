@@ -86,7 +86,7 @@ export default function KBarProvider({ children, onNavigate }: KBarProviderProps
       shortcut: ['n'],
       keywords: 'profile usuario cuenta perfil',
       section: 'Acciones',
-      perform: () => alert('Abriendo perfil...'),
+      perform: () => onNavigate('profile'),
       icon: <User className="w-5 h-5" />,
     },
     {

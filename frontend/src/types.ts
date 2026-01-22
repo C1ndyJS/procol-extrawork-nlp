@@ -1,23 +1,25 @@
-export type ViewType = 'recursos' | 'extraworks';
-
-export interface ExtraWork {
-  id: string;
-  title: string;
-  description: string;
-  status: string;
-  priority: string;
-  createdAt: string;
-  updatedAt: string;
-  resources?: Resource[];
-}
+export type ViewType = 'resources' | 'extraworks' | 'profile';
 
 export interface Resource {
   id: string;
   name: string;
   type: string;
-  availability: string;
-  extraWorkId?: string | null;
-  createdAt: string;
-  updatedAt: string;
-  extraWorks?: ExtraWork[];
+  url?: string;
+  metadata?: any;
+  extraWorkId: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface ExtraWork {
+  id: string;
+  title: string;
+  description: string;
+  status?: string;
+  priority?: string;
+  startDate?: string;
+  endDate?: string;
+  resources?: Resource[];
+  createdAt?: string;
+  updatedAt?: string;
 }
