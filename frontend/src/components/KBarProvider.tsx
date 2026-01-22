@@ -12,6 +12,7 @@ import {
   Priority,
 } from 'kbar';
 import { Briefcase, Settings, User, LogOut, Plus, Search, FileText, Zap, Home } from 'lucide-react';
+import { useLanguage } from '../i18n/LanguageContext';
 import { ViewType } from '../types';
 import { apiService, ActionSuggestion } from '../services/api';
 
@@ -25,6 +26,7 @@ let globalSetSearchQuery: ((q: string) => void) | null = null;
 
 export default function KBarProvider({ children, onNavigate }: KBarProviderProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const { t } = useLanguage();
 
   // Store setter globally so it can be called from options callback
   useEffect(() => {
@@ -38,38 +40,38 @@ export default function KBarProvider({ children, onNavigate }: KBarProviderProps
   const staticActions: Action[] = useMemo(() => [
     {
       id: 'home',
-      name: 'Inicio',
+      name: t('home'),
       shortcut: ['h'],
       keywords: 'inicio home principal volver',
-      section: 'Navegación',
+      section: t('navigation'),
       perform: () => onNavigate('home'),
       icon: <Home className="w-5 h-5" />,
     },
     {
       id: 'recursos',
-      name: 'Recursos',
+      name: t('resources'),
       shortcut: ['r'],
-      keywords: 'recursos personal empleados trabajadores',
-      section: 'Navegación',
+      keywords: 'recursos personal empleados trabajadores resources',
+      section: t('navigation'),
       perform: () => onNavigate('recursos'),
       icon: <User className="w-5 h-5" />,
     },
     {
       id: 'extraworks',
-      name: 'Extraworks',
+      name: t('extraworks'),
       shortcut: ['e'],
-      keywords: 'trabajos extras proyectos',
-      section: 'Navegación',
+      keywords: 'trabajos extras proyectos extraworks',
+      section: t('navigation'),
       perform: () => onNavigate('extraworks'),
       icon: <Briefcase className="w-5 h-5" />,
     },
     {
       id: 'create-extrawork',
-      name: 'Crear ExtraWork',
+      name: t('createExtrawork'),
       shortcut: ['c', 'e'],
       keywords: 'crear nuevo extrawork trabajo añadir agregar new create',
-      section: 'Crear',
-      subtitle: 'Crear un nuevo trabajo extra',
+      section: t('create'),
+      subtitle: t('createNewExtrawork'),
       perform: async () => {
         onNavigate('extraworks');
         window.dispatchEvent(new CustomEvent('openCreateExtraWork'));
@@ -78,11 +80,11 @@ export default function KBarProvider({ children, onNavigate }: KBarProviderProps
     },
     {
       id: 'create-resource',
-      name: 'Crear Recurso',
+      name: t('createResource'),
       shortcut: ['c', 'r'],
       keywords: 'crear nuevo recurso personal empleado añadir agregar new create resource',
-      section: 'Crear',
-      subtitle: 'Crear un nuevo recurso',
+      section: t('create'),
+      subtitle: t('createNewResource'),
       perform: async () => {
         onNavigate('recursos');
         window.dispatchEvent(new CustomEvent('openCreateResource'));
@@ -90,33 +92,30 @@ export default function KBarProvider({ children, onNavigate }: KBarProviderProps
       icon: <Plus className="w-5 h-5" />,
     },
     {
-      id: 'profile',
-      name: 'Ver Perfil',
-      shortcut: ['n'],
-      keywords: 'profile usuario cuenta perfil',
-      section: 'Acciones',
-      perform: () => alert('Abriendo perfil...'),
-      icon: <User className="w-5 h-5" />,
-    },
-    {
       id: 'settings',
-      name: 'Configuración',
+      name: t('settings'),
       shortcut: ['s'],
-      keywords: 'settings ajustes preferencias configuracion',
-      section: 'Acciones',
-      perform: () => alert('Abriendo configuración...'),
+      keywords: 'settings ajustes preferencias configuracion idioma language',
+      section: t('actions'),
+      subtitle: t('language'),
+      perform: () => {
+        window.dispatchEvent(new CustomEvent('openSettings'));
+      },
       icon: <Settings className="w-5 h-5" />,
     },
     {
       id: 'logout',
-      name: 'Cerrar Sesión',
+      name: t('logout'),
       shortcut: ['l', 'o'],
-      keywords: 'logout salir exit cerrar sesion',
-      section: 'Acciones',
-      perform: () => alert('Cerrando sesión...'),
+      keywords: 'logout salir exit cerrar sesion log out',
+      section: t('actions'),
+      subtitle: t('home'),
+      perform: () => {
+        onNavigate('home');
+      },
       icon: <LogOut className="w-5 h-5" />,
     },
-  ], [onNavigate]);
+  ], [onNavigate, t]);
 
   // KBar options with onQueryChange callback
   const options = useMemo(() => ({
@@ -133,7 +132,7 @@ export default function KBarProvider({ children, onNavigate }: KBarProviderProps
 
   return (
     <Provider actions={staticActions} options={options}>
-      <DynamicActionsHandler onNavigate={onNavigate} searchQuery={searchQuery} />
+      <DynamicActionsHandler onNavigate={onNavigate} searchQuery={searchQuery} sectionName={t('smartActions')} />
       <KBarPortal>
         <KBarPositioner className="bg-black/50 backdrop-blur-sm z-50">
           <KBarAnimator className="max-w-2xl w-full bg-white rounded-xl shadow-2xl overflow-hidden">
@@ -152,10 +151,12 @@ export default function KBarProvider({ children, onNavigate }: KBarProviderProps
 // Component to handle dynamic actions from backend
 function DynamicActionsHandler({
   onNavigate,
-  searchQuery
+  searchQuery,
+  sectionName
 }: {
   onNavigate: (view: ViewType) => void;
   searchQuery: string;
+  sectionName: string;
 }) {
   const [dynamicActions, setDynamicActions] = useState<Action[]>([]);
 
@@ -191,7 +192,7 @@ function DynamicActionsHandler({
         subtitle: suggestion.subtitle,
         // Include the search query in keywords so KBar matches it
         keywords: `${query} ${suggestion.description}`,
-        section: 'Acciones Inteligentes',
+        section: sectionName,
         priority: Priority.HIGH,
         perform: async () => {
           try {
@@ -287,7 +288,7 @@ function DynamicActionsHandler({
       };
       return action;
     });
-  }, [onNavigate, getIconForIntent]);
+  }, [onNavigate, getIconForIntent, sectionName]);
 
   // Fetch dynamic actions when searchQuery changes
   useEffect(() => {

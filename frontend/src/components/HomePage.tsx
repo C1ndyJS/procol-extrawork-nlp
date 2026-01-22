@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useKBar } from 'kbar';
 import { Menu, X, Search, Briefcase, Users, Command } from 'lucide-react';
+import { useLanguage } from '../i18n/LanguageContext';
 import type { ViewType } from '../types';
 
 interface HomePageProps {
@@ -10,6 +11,7 @@ interface HomePageProps {
 export default function HomePage({ onNavigate }: HomePageProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const { query } = useKBar();
+  const { t } = useLanguage();
 
   const handleSearchClick = () => {
     query.toggle();
@@ -37,7 +39,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
         }`}
       >
         <div className="pt-20 px-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-6">Navegación</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-6">{t('navigation')}</h2>
 
           <nav className="space-y-2">
             <button
@@ -51,8 +53,8 @@ export default function HomePage({ onNavigate }: HomePageProps) {
                 <Briefcase className="w-5 h-5 text-blue-600" />
               </div>
               <div className="text-left">
-                <div className="font-medium">ExtraWorks</div>
-                <div className="text-xs text-gray-500">Gestionar trabajos extras</div>
+                <div className="font-medium">{t('extraworks')}</div>
+                <div className="text-xs text-gray-500">{t('manageExtraworks')}</div>
               </div>
             </button>
 
@@ -67,19 +69,19 @@ export default function HomePage({ onNavigate }: HomePageProps) {
                 <Users className="w-5 h-5 text-green-600" />
               </div>
               <div className="text-left">
-                <div className="font-medium">Recursos</div>
-                <div className="text-xs text-gray-500">Gestionar personal y equipos</div>
+                <div className="font-medium">{t('resources')}</div>
+                <div className="text-xs text-gray-500">{t('manageResources')}</div>
               </div>
             </button>
           </nav>
 
           <div className="mt-8 pt-6 border-t border-gray-100">
-            <p className="text-xs text-gray-400 mb-2">Atajo de teclado</p>
+            <p className="text-xs text-gray-400 mb-2">{t('keyboardShortcut')}</p>
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <kbd className="px-2 py-1 bg-gray-100 rounded text-xs font-mono">Ctrl</kbd>
               <span>+</span>
               <kbd className="px-2 py-1 bg-gray-100 rounded text-xs font-mono">K</kbd>
-              <span className="text-gray-400">para buscar</span>
+              <span className="text-gray-400">{t('toSearch')}</span>
             </div>
           </div>
         </div>
@@ -100,8 +102,8 @@ export default function HomePage({ onNavigate }: HomePageProps) {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-lg mb-4">
             <Command className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">Extraworks App</h1>
-          <p className="text-gray-500 mt-2">Gestiona tus trabajos extras con lenguaje natural</p>
+          <h1 className="text-3xl font-bold text-gray-900">{t('appTitle')}</h1>
+          <p className="text-gray-500 mt-2">{t('appSubtitle')}</p>
         </div>
 
         {/* Search Box */}
@@ -112,7 +114,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
           <div className="flex items-center gap-4 px-6 py-4">
             <Search className="w-5 h-5 text-gray-400 group-hover:text-blue-500 transition-colors" />
             <span className="flex-1 text-left text-gray-400 group-hover:text-gray-500">
-              Escribe lo que deseas hacer...
+              {t('searchPlaceholder')}
             </span>
             <div className="flex items-center gap-1">
               <kbd className="px-2 py-1 bg-gray-100 rounded text-xs font-mono text-gray-500">⌘</kbd>
@@ -125,13 +127,13 @@ export default function HomePage({ onNavigate }: HomePageProps) {
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <QuickAction
             icon={<Briefcase className="w-4 h-4" />}
-            label="Ver ExtraWorks"
+            label={t('viewExtraworks')}
             onClick={() => onNavigate('extraworks')}
             color="blue"
           />
           <QuickAction
             icon={<Users className="w-4 h-4" />}
-            label="Ver Recursos"
+            label={t('viewResources')}
             onClick={() => onNavigate('recursos')}
             color="green"
           />
@@ -139,7 +141,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
 
         {/* Examples */}
         <div className="mt-12 text-center max-w-lg">
-          <p className="text-sm text-gray-400 mb-4">Prueba escribir:</p>
+          <p className="text-sm text-gray-400 mb-4">{t('tryWriting')}</p>
           <div className="flex flex-wrap justify-center gap-2">
             <ExampleChip text="crear extrawork pintar pared" onClick={handleSearchClick} />
             <ExampleChip text="asignar recurso a EW-001" onClick={handleSearchClick} />

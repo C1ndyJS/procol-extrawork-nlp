@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Briefcase, Plus, Edit2, Trash2, X, Clock, CheckCircle2, AlertCircle, Users, Link2 } from 'lucide-react';
 import { apiService } from '../services/api';
+import { useLanguage } from '../i18n/LanguageContext';
 import type { ExtraWork, Resource } from '../types';
 
 export default function Extraworks() {
+  const { t } = useLanguage();
   const [extraworks, setExtraworks] = useState<ExtraWork[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -189,27 +191,27 @@ export default function Extraworks() {
   const getStatusBadge = (status: string) => {
     const statusConfig = {
       completed: {
-        label: 'Completado',
+        label: t('completed'),
         color: 'bg-green-100 text-green-800',
         icon: <CheckCircle2 className="w-4 h-4" />,
       },
       in_progress: {
-        label: 'En Progreso',
+        label: t('inProgress'),
         color: 'bg-blue-100 text-blue-800',
         icon: <Clock className="w-4 h-4" />,
       },
       pending: {
-        label: 'Pendiente',
+        label: t('pending'),
         color: 'bg-yellow-100 text-yellow-800',
         icon: <AlertCircle className="w-4 h-4" />,
       },
       cancelled: {
-        label: 'Cancelado',
+        label: t('cancelled'),
         color: 'bg-red-100 text-red-800',
         icon: <X className="w-4 h-4" />,
       },
       on_hold: {
-        label: 'En Espera',
+        label: t('onHold'),
         color: 'bg-gray-100 text-gray-800',
         icon: <Clock className="w-4 h-4" />,
       },
@@ -229,9 +231,9 @@ export default function Extraworks() {
 
   const getPriorityBadge = (priority: string) => {
     const badges = {
-      high: { label: 'Alta', class: 'bg-red-100 text-red-800' },
-      medium: { label: 'Media', class: 'bg-yellow-100 text-yellow-800' },
-      low: { label: 'Baja', class: 'bg-green-100 text-green-800' },
+      high: { label: t('high'), class: 'bg-red-100 text-red-800' },
+      medium: { label: t('medium'), class: 'bg-yellow-100 text-yellow-800' },
+      low: { label: t('low'), class: 'bg-green-100 text-green-800' },
     };
     const badge = badges[priority as keyof typeof badges] || badges.medium;
     return (
@@ -257,43 +259,43 @@ export default function Extraworks() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Extraworks</h1>
-          <p className="text-gray-600 mt-1">Gestión de trabajos adicionales</p>
+          <h1 className="text-3xl font-bold text-gray-900">{t('extraworks')}</h1>
+          <p className="text-gray-600 mt-1">{t('manageExtraworks')}</p>
         </div>
         <button
           onClick={handleNewExtrawork}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
           <Plus className="w-5 h-5" />
-          Nuevo ExtraWork
+          {t('newExtrawork')}
         </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <SummaryCard
           icon={<Briefcase className="w-5 h-5" />}
-          label="Total"
+          label={t('totalExtraworks')}
           value={extraworks.length.toString()}
           bgColor="bg-blue-50"
           textColor="text-blue-600"
         />
         <SummaryCard
           icon={<Clock className="w-5 h-5" />}
-          label="En Progreso"
+          label={t('inProgress')}
           value={inProgressCount.toString()}
           bgColor="bg-purple-50"
           textColor="text-purple-600"
         />
         <SummaryCard
           icon={<AlertCircle className="w-5 h-5" />}
-          label="Pendientes"
+          label={t('pending')}
           value={pendingCount.toString()}
           bgColor="bg-yellow-50"
           textColor="text-yellow-600"
         />
         <SummaryCard
           icon={<CheckCircle2 className="w-5 h-5" />}
-          label="Completados"
+          label={t('completedExtraworks')}
           value={completedCount.toString()}
           bgColor="bg-green-50"
           textColor="text-green-600"
@@ -321,22 +323,22 @@ export default function Extraworks() {
                     ID
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Título
+                    {t('title')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Descripción
+                    {t('description')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Estado
+                    {t('status')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Prioridad
+                    {t('priority')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Recursos
+                    {t('resources')}
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Acciones
+                    {t('actionsColumn')}
                   </th>
                 </tr>
               </thead>
@@ -402,7 +404,7 @@ export default function Extraworks() {
           <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full my-8">
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
               <h2 className="text-xl font-semibold text-gray-900">
-                {editingExtrawork ? 'Editar ExtraWork' : 'Nuevo ExtraWork'} {formStep === 2 && '- Asignar Recursos'}
+                {editingExtrawork ? t('editResource') : t('newExtrawork')} {formStep === 2 && `- ${t('assignToExtrawork')}`}
               </h2>
               <button
                 onClick={() => {
@@ -455,7 +457,7 @@ export default function Extraworks() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Título *
+                      {t('title')} *
                     </label>
                     <input
                       type="text"
@@ -469,7 +471,7 @@ export default function Extraworks() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Descripción *
+                      {t('description')} *
                     </label>
                     <textarea
                       value={formData.description}
@@ -484,33 +486,33 @@ export default function Extraworks() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Estado
+                        {t('status')}
                       </label>
                       <select
                         value={formData.status}
                         onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       >
-                        <option value="pending">Pendiente</option>
-                        <option value="in_progress">En Progreso</option>
-                        <option value="completed">Completado</option>
-                        <option value="on_hold">En Espera</option>
-                        <option value="cancelled">Cancelado</option>
+                        <option value="pending">{t('pending')}</option>
+                        <option value="in_progress">{t('inProgress')}</option>
+                        <option value="completed">{t('completed')}</option>
+                        <option value="on_hold">{t('onHold')}</option>
+                        <option value="cancelled">{t('cancelled')}</option>
                       </select>
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Prioridad
+                        {t('priority')}
                       </label>
                       <select
                         value={formData.priority}
                         onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       >
-                        <option value="low">Baja</option>
-                        <option value="medium">Media</option>
-                        <option value="high">Alta</option>
+                        <option value="low">{t('low')}</option>
+                        <option value="medium">{t('medium')}</option>
+                        <option value="high">{t('high')}</option>
                       </select>
                     </div>
                   </div>
@@ -526,13 +528,13 @@ export default function Extraworks() {
                       }}
                       className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                     >
-                      Cancelar
+                      {t('cancel')}
                     </button>
                     <button
                       type="submit"
                       className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                     >
-                      Siguiente
+                      {t('save')}
                     </button>
                   </div>
                 </>

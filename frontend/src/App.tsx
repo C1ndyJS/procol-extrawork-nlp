@@ -1,13 +1,26 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import KBarProvider from './components/KBarProvider';
 import Header from './components/Header';
 import Recursos from './components/Recursos';
 import Extraworks from './components/Extraworks';
 import HomePage from './components/HomePage';
+import SettingsModal from './components/SettingsModal';
+import { LanguageProvider } from './i18n/LanguageContext';
 import { ViewType } from './types';
 
 function App() {
   const [currentView, setCurrentView] = useState<ViewType>('home');
+  const [showSettings, setShowSettings] = useState(false);
+
+  // Listen for settings event from KBar
+  useEffect(() => {
+    const handleOpenSettings = () => {
+      setShowSettings(true);
+    };
+
+    window.addEventListener('openSettings', handleOpenSettings);
+    return () => window.removeEventListener('openSettings', handleOpenSettings);
+  }, []);
 
   const renderView = () => {
     switch (currentView) {
@@ -37,11 +50,14 @@ function App() {
   };
 
   return (
-    <KBarProvider onNavigate={setCurrentView}>
-      <div className="min-h-screen bg-gray-50">
-        {renderView()}
-      </div>
-    </KBarProvider>
+    <LanguageProvider>
+      <KBarProvider onNavigate={setCurrentView}>
+        <div className="min-h-screen bg-gray-50">
+          {renderView()}
+          <SettingsModal isOpen={showSettings} onClose={() => setShowSettings(false)} />
+        </div>
+      </KBarProvider>
+    </LanguageProvider>
   );
 }
 

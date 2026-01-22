@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Users, Plus, Edit2, Trash2, X, Briefcase, ExternalLink } from 'lucide-react';
 import { apiService } from '../services/api';
+import { useLanguage } from '../i18n/LanguageContext';
 import type { Resource, ViewType, ExtraWork } from '../types';
 
 interface RecursosProps {
@@ -8,6 +9,7 @@ interface RecursosProps {
 }
 
 export default function Recursos({ onNavigate }: RecursosProps) {
+  const { t } = useLanguage();
   const [recursos, setRecursos] = useState<Resource[]>([]);
   const [extraworks, setExtraworks] = useState<ExtraWork[]>([]);
   const [loading, setLoading] = useState(true);
@@ -171,9 +173,9 @@ export default function Recursos({ onNavigate }: RecursosProps) {
 
   const getAvailabilityBadge = (availability: string) => {
     const badges = {
-      available: { label: 'Disponible', class: 'bg-green-100 text-green-800' },
-      busy: { label: 'Ocupado', class: 'bg-yellow-100 text-yellow-800' },
-      unavailable: { label: 'No disponible', class: 'bg-red-100 text-red-800' },
+      available: { label: t('available'), class: 'bg-green-100 text-green-800' },
+      busy: { label: t('busy'), class: 'bg-yellow-100 text-yellow-800' },
+      unavailable: { label: t('unavailable'), class: 'bg-red-100 text-red-800' },
     };
     const badge = badges[availability as keyof typeof badges] || badges.available;
     return (
@@ -195,36 +197,36 @@ export default function Recursos({ onNavigate }: RecursosProps) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Recursos</h1>
-          <p className="text-gray-600 mt-1">Gestión de recursos y personal</p>
+          <h1 className="text-3xl font-bold text-gray-900">{t('resources')}</h1>
+          <p className="text-gray-600 mt-1">{t('manageResources')}</p>
         </div>
         <button
           onClick={handleNewResource}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
           <Plus className="w-5 h-5" />
-          Nuevo Recurso
+          {t('newResource')}
         </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <SummaryCard
           icon={<Users className="w-5 h-5" />}
-          label="Total Recursos"
+          label={t('totalResources')}
           value={recursos.length.toString()}
           bgColor="bg-blue-50"
           textColor="text-blue-600"
         />
         <SummaryCard
           icon={<Users className="w-5 h-5" />}
-          label="Disponibles"
+          label={t('availableResources')}
           value={recursos.filter(r => r.availability === 'available').length.toString()}
           bgColor="bg-green-50"
           textColor="text-green-600"
         />
         <SummaryCard
           icon={<Briefcase className="w-5 h-5" />}
-          label="Asignados"
+          label={t('assignedResources')}
           value={recursos.filter(r => r.extraWorkId).length.toString()}
           bgColor="bg-purple-50"
           textColor="text-purple-600"
@@ -252,19 +254,19 @@ export default function Recursos({ onNavigate }: RecursosProps) {
                     ID
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Nombre
+                    {t('name')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Tipo
+                    {t('type')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Disponibilidad
+                    {t('availability')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Asignado a
+                    {t('assignedExtrawork')}
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Acciones
+                    {t('actionsColumn')}
                   </th>
                 </tr>
               </thead>
@@ -317,7 +319,7 @@ export default function Recursos({ onNavigate }: RecursosProps) {
                         ) : resource.extraWorkId ? (
                           <span className="text-blue-600 font-medium">{resource.extraWorkId}</span>
                         ) : (
-                          <span className="text-gray-400">Sin asignar</span>
+                          <span className="text-gray-400">{t('unassigned')}</span>
                         )}
                       </div>
                     </td>
@@ -349,7 +351,7 @@ export default function Recursos({ onNavigate }: RecursosProps) {
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
               <h2 className="text-xl font-semibold text-gray-900">
-                {editingResource ? 'Editar Recurso' : 'Nuevo Recurso'}
+                {editingResource ? t('editResource') : t('newResource')}
               </h2>
               <button
                 onClick={() => {
@@ -366,7 +368,7 @@ export default function Recursos({ onNavigate }: RecursosProps) {
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Nombre *
+                  {t('name')} *
                 </label>
                 <input
                   type="text"
@@ -380,7 +382,7 @@ export default function Recursos({ onNavigate }: RecursosProps) {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Tipo *
+                  {t('type')} *
                 </label>
                 <input
                   type="text"
@@ -394,29 +396,29 @@ export default function Recursos({ onNavigate }: RecursosProps) {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Disponibilidad
+                  {t('availability')}
                 </label>
                 <select
                   value={formData.availability}
                   onChange={(e) => setFormData({ ...formData, availability: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
-                  <option value="available">Disponible</option>
-                  <option value="busy">Ocupado</option>
-                  <option value="unavailable">No disponible</option>
+                  <option value="available">{t('available')}</option>
+                  <option value="busy">{t('busy')}</option>
+                  <option value="unavailable">{t('unavailable')}</option>
                 </select>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Asignar a ExtraWork
+                  {t('assignToExtrawork')}
                 </label>
                 <select
                   value={formData.extraWorkId}
                   onChange={(e) => setFormData({ ...formData, extraWorkId: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
-                  <option value="">Sin asignar</option>
+                  <option value="">{t('unassigned')}</option>
                   {extraworks.map((ew) => (
                     <option key={ew.id} value={ew.id}>
                       {ew.id} - {ew.title}
@@ -435,13 +437,13 @@ export default function Recursos({ onNavigate }: RecursosProps) {
                   }}
                   className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                 >
-                  Cancelar
+                  {t('cancel')}
                 </button>
                 <button
                   type="submit"
                   className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                 >
-                  {editingResource ? 'Actualizar' : 'Crear'}
+                  {editingResource ? t('save') : t('save')}
                 </button>
               </div>
             </form>
