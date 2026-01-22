@@ -10,8 +10,7 @@ datasource db {
 }
 
 model ExtraWork {
-  id          String   @id @default(uuid())
-  code        String   @unique @default(cuid())
+  id          String   @id
   title       String
   description String
   status      String   @default("pending")
@@ -26,7 +25,7 @@ model ExtraWork {
 // Valid statuses: pending, in_progress, completed, cancelled, on_hold
 
 model Resource {
-  id           String     @id @default(uuid())
+  id           String     @id
   name         String
   type         String
   availability String     @default("available")

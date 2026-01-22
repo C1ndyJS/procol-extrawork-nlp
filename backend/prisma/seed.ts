@@ -15,7 +15,7 @@ async function main() {
   // Create ExtraWorks
   const extraWork1 = await prisma.extraWork.create({
     data: {
-      code: 'EW-001-FACHADA',
+      id: 'EW-001',
       title: 'Renovación Fachada Edificio Principal',
       description: 'Trabajo adicional para la renovación completa de la fachada del edificio principal, incluye pintura, reparación de grietas y mejoras estructurales.',
       status: 'in_progress',
@@ -27,7 +27,7 @@ async function main() {
 
   const extraWork2 = await prisma.extraWork.create({
     data: {
-      code: 'EW-002-HVAC',
+      id: 'EW-002',
       title: 'Instalación Sistema HVAC Adicional',
       description: 'Instalación de un sistema de climatización adicional en las nuevas áreas de expansión del edificio.',
       status: 'pending',
@@ -39,7 +39,7 @@ async function main() {
 
   const extraWork3 = await prisma.extraWork.create({
     data: {
-      code: 'EW-003-PARKING',
+      id: 'EW-003',
       title: 'Ampliación Estacionamiento',
       description: 'Construcción de 50 plazas adicionales de estacionamiento subterráneo con sistema de seguridad.',
       status: 'pending',
@@ -51,7 +51,7 @@ async function main() {
 
   const extraWork4 = await prisma.extraWork.create({
     data: {
-      code: 'EW-004-RED',
+      id: 'EW-004',
       title: 'Cableado de Red Estructurada',
       description: 'Instalación de cableado de red estructurada categoría 6A en todos los pisos del edificio.',
       status: 'completed',
@@ -63,7 +63,7 @@ async function main() {
 
   const extraWork5 = await prisma.extraWork.create({
     data: {
-      code: 'EW-005-SOLAR',
+      id: 'EW-005',
       title: 'Sistema de Paneles Solares',
       description: 'Instalación de sistema fotovoltaico en la azotea para generación de energía renovable.',
       status: 'on_hold',
@@ -75,7 +75,7 @@ async function main() {
 
   const extraWork6 = await prisma.extraWork.create({
     data: {
-      code: 'EW-006-ASCENSORES',
+      id: 'EW-006',
       title: 'Modernización Ascensores',
       description: 'Actualización completa del sistema de ascensores incluyendo controles inteligentes y eficiencia energética.',
       status: 'in_progress',
@@ -90,6 +90,7 @@ async function main() {
   // Create Resources for ExtraWork 1
   await prisma.resource.create({
     data: {
+      id: 'R-001',
       name: 'Equipo de Albañilería',
       type: 'personnel',
       url: 'https://example.com/team/albanileria',
@@ -100,6 +101,7 @@ async function main() {
 
   await prisma.resource.create({
     data: {
+      id: 'R-002',
       name: 'Grúa Torre GT-500',
       type: 'equipment',
       url: 'https://example.com/equipment/crane-gt500',
@@ -110,6 +112,7 @@ async function main() {
 
   await prisma.resource.create({
     data: {
+      id: 'R-003',
       name: 'Pintura Exterior Premium',
       type: 'material',
       metadata: JSON.stringify({ quantity: '500 liters', brand: 'DuraCoat', color: 'Beige Claro' }),
@@ -120,6 +123,7 @@ async function main() {
   // Create Resources for ExtraWork 2
   await prisma.resource.create({
     data: {
+      id: 'R-004',
       name: 'Técnicos HVAC Certificados',
       type: 'personnel',
       metadata: JSON.stringify({ size: 4, certifications: ['EPA', 'NATE'], hourly_rate: 85 }),
@@ -129,6 +133,7 @@ async function main() {
 
   await prisma.resource.create({
     data: {
+      id: 'R-005',
       name: 'Sistema HVAC Carrier 50TCQ',
       type: 'equipment',
       url: 'https://example.com/hvac/carrier-50tcq',
@@ -140,6 +145,7 @@ async function main() {
   // Create Resources for ExtraWork 3
   await prisma.resource.create({
     data: {
+      id: 'R-006',
       name: 'Equipo de Excavación',
       type: 'personnel',
       metadata: JSON.stringify({ size: 12, experience: 'heavy construction', equipment_operators: 3 }),
@@ -149,6 +155,7 @@ async function main() {
 
   await prisma.resource.create({
     data: {
+      id: 'R-007',
       name: 'Excavadora Caterpillar 320D',
       type: 'equipment',
       url: 'https://example.com/machinery/cat-320d',
@@ -159,6 +166,7 @@ async function main() {
 
   await prisma.resource.create({
     data: {
+      id: 'R-008',
       name: 'Concreto Premezclado',
       type: 'material',
       metadata: JSON.stringify({ quantity: '300 m³', strength: 'f\'c=250 kg/cm²', supplier: 'Concretos del Valle' }),
@@ -169,6 +177,7 @@ async function main() {
   // Create Resources for ExtraWork 4
   await prisma.resource.create({
     data: {
+      id: 'R-009',
       name: 'Instaladores de Red',
       type: 'personnel',
       metadata: JSON.stringify({ size: 6, certifications: ['BICSI', 'Cisco CCNA'], completed: true }),
@@ -178,6 +187,7 @@ async function main() {
 
   await prisma.resource.create({
     data: {
+      id: 'R-010',
       name: 'Cable Cat 6A UTP',
       type: 'material',
       metadata: JSON.stringify({ quantity: '15000 meters', brand: 'Panduit', standard: 'TIA-568-C.2' }),
@@ -188,6 +198,7 @@ async function main() {
   // Create Resources for ExtraWork 5
   await prisma.resource.create({
     data: {
+      id: 'R-011',
       name: 'Ingenieros Fotovoltaicos',
       type: 'personnel',
       metadata: JSON.stringify({ size: 3, certifications: ['NABCEP'], specialization: 'solar_design' }),
@@ -197,6 +208,7 @@ async function main() {
 
   await prisma.resource.create({
     data: {
+      id: 'R-012',
       name: 'Paneles Solares Jinko 550W',
       type: 'equipment',
       url: 'https://example.com/solar/jinko-550w',
@@ -208,6 +220,7 @@ async function main() {
   // Create Resources for ExtraWork 6
   await prisma.resource.create({
     data: {
+      id: 'R-013',
       name: 'Técnicos de Ascensores',
       type: 'personnel',
       url: 'https://example.com/team/elevator-techs',
@@ -218,6 +231,7 @@ async function main() {
 
   await prisma.resource.create({
     data: {
+      id: 'R-014',
       name: 'Sistema de Control Otis Gen3',
       type: 'equipment',
       url: 'https://example.com/elevators/otis-gen3',
@@ -226,7 +240,7 @@ async function main() {
     },
   });
 
-  console.log('✅ Created 15 Resources');
+  console.log('✅ Created 14 Resources');
 
   // Create Actions
   await prisma.action.createMany({
@@ -281,7 +295,7 @@ async function main() {
   console.log('🎉 Database seeded successfully!');
   console.log('\nSummary:');
   console.log('- 6 ExtraWorks');
-  console.log('- 15 Resources');
+  console.log('- 14 Resources');
   console.log('- 7 Actions');
 }
 

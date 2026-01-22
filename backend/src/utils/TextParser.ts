@@ -20,15 +20,15 @@ export interface ParsedQuery {
 }
 
 export class TextParser {
-  // Patterns for matching ExtraWork IDs/codes
-  private readonly extraWorkPattern = /(?:EW-)?(\d+|[A-Z0-9-]+)/gi;
+  // Patterns for matching ExtraWork IDs/codes (more specific pattern)
+  private readonly extraWorkPattern = /\b(EW-\d+)\b/gi;
   
   // Spanish keywords for different intentions
   private readonly intentionPatterns: Map<string, RegExp[]> = new Map([
     ['create_extrawork', [
-      /\b(?:crear|nuevo|nueva|añadir|agregar)\s+(?:un\s+)?(?:extrawork|trabajo|ew)\b/i,
-      /\bquiero\s+crear\s+(?:un\s+)?(?:extrawork|trabajo)/i,
-      /\b(?:nuevo|nueva)\s+(?:extrawork|trabajo)/i
+      /\b(?:crear|nuevo|nueva|añadir|agregar)\s+(?:un\s+)?(?:extrawork|trabajo|ew)\b:?/i,
+      /\bquiero\s+crear\s+(?:un\s+)?(?:extrawork|trabajo):?/i,
+      /\b(?:nuevo|nueva)\s+(?:extrawork|trabajo):?/i
     ]],
     ['search_extrawork', [
       /\bbuscar\s+(?:extrawork|trabajo|ew)/i,
@@ -45,11 +45,11 @@ export class TextParser {
       /\bdetalle\s+(?:del?\s+)?(?:extrawork\s+)?(?:EW-)?(\d+)/i
     ]],
     ['assign_resource_to_extrawork', [
-      /\bañadir\s+["']?([^"']+?)["']?\s+a(?:l)?\s+(?:extrawork\s+)?(?:EW-)?(\d+)/i,
-      /\basignar\s+["']?([^"']+?)["']?\s+a(?:l)?\s+(?:extrawork\s+)?(?:EW-)?(\d+)/i,
-      /\bagregar\s+["']?([^"']+?)["']?\s+(?:a|en)(?:l)?\s+(?:extrawork\s+)?(?:EW-)?(\d+)/i,
-      /\bponer\s+["']?([^"']+?)["']?\s+(?:a|en)(?:l)?\s+(?:extrawork\s+)?(?:EW-)?(\d+)/i,
-      /\brecurso\s+["']?([^"']+?)["']?\s+(?:a|en)(?:l)?\s+(?:extrawork\s+)?(?:EW-)?(\d+)/i
+      /\bañadir\s+["']?([^"']+?)["']?\s+a(?:l)?\s+(?:extrawork\s+)?(EW-\d+|\d+)/i,
+      /\basignar\s+["']?([^"']+?)["']?\s+a(?:l)?\s+(?:extrawork\s+)?(EW-\d+|\d+)/i,
+      /\bagregar\s+["']?([^"']+?)["']?\s+(?:a|en)(?:l)?\s+(?:extrawork\s+)?(EW-\d+|\d+)/i,
+      /\bponer\s+["']?([^"']+?)["']?\s+(?:a|en)(?:l)?\s+(?:extrawork\s+)?(EW-\d+|\d+)/i,
+      /\brecurso\s+["']?([^"']+?)["']?\s+(?:a|en)(?:l)?\s+(?:extrawork\s+)?(EW-\d+|\d+)/i
     ]],
     ['search_resource', [
       /\bbuscar\s+(?:recurso|recursos)/i,
@@ -85,12 +85,12 @@ export class TextParser {
       originalQuery: query
     };
 
-    // Extract ExtraWork ID/Code
+    // Extract ExtraWork ID/Code (e.g., EW-001)
     const ewMatch = query.match(this.extraWorkPattern);
     if (ewMatch) {
-      const ewId = ewMatch[0].replace(/^EW-?/i, '');
-      result.entities.extraWorkId = ewId;
-      result.entities.extraWorkCode = ewMatch[0];
+      // Keep the full ID format (EW-001)
+      result.entities.extraWorkId = ewMatch[0].toUpperCase();
+      result.entities.extraWorkCode = ewMatch[0].toUpperCase();
     }
 
     // Match intention patterns
@@ -108,7 +108,11 @@ export class TextParser {
             // Extract resource name from assign_resource_to_extrawork pattern
             if (intention === 'assign_resource_to_extrawork') {
               if (match[1]) result.entities.resourceName = match[1].trim();
-              if (match[2]) result.entities.extraWorkId = match[2];
+              if (match[2]) {
+                // Normalize to EW-XXX format
+                const ewId = match[2].toUpperCase();
+                result.entities.extraWorkId = ewId.startsWith('EW-') ? ewId : `EW-${ewId.padStart(3, '0')}`;
+              }
             }
             
             // Extract IDs from other patterns if not already extracted
@@ -146,12 +150,13 @@ export class TextParser {
   private extractTitle(query: string): string | undefined {
     // Patterns to extract title after create keywords
     // Using greedy capture (.+) instead of lazy (.+?) for better matching
+    // Support optional colon (:) after extrawork/trabajo/ew
     const patterns = [
-      /\bcrear\s+(?:un\s+)?(?:extrawork|trabajo|ew)\s+["']?(.+)["']?\s*$/i,
-      /\bnuevo\s+(?:extrawork|trabajo|ew)\s+["']?(.+)["']?\s*$/i,
-      /\bañadir\s+(?:un\s+)?(?:extrawork|trabajo|ew)\s+["']?(.+)["']?\s*$/i,
-      /\bagregar\s+(?:un\s+)?(?:extrawork|trabajo|ew)\s+["']?(.+)["']?\s*$/i,
-      /\bquiero\s+crear\s+(?:un\s+)?(?:extrawork|trabajo)\s+["']?(.+)["']?\s*$/i,
+      /\bcrear\s+(?:un\s+)?(?:extrawork|trabajo|ew):?\s+["']?(.+)["']?\s*$/i,
+      /\bnuevo\s+(?:extrawork|trabajo|ew):?\s+["']?(.+)["']?\s*$/i,
+      /\bañadir\s+(?:un\s+)?(?:extrawork|trabajo|ew):?\s+["']?(.+)["']?\s*$/i,
+      /\bagregar\s+(?:un\s+)?(?:extrawork|trabajo|ew):?\s+["']?(.+)["']?\s*$/i,
+      /\bquiero\s+crear\s+(?:un\s+)?(?:extrawork|trabajo):?\s+["']?(.+)["']?\s*$/i,
       // Fallback: if "crear" is followed by anything that's not "extrawork/trabajo/ew"
       /\bcrear\s+(?!(?:un\s+)?(?:extrawork|trabajo|ew|recurso|resource)\b)["']?(.+)["']?\s*$/i,
       /\bnuevo\s+(?!(?:extrawork|trabajo|ew|recurso|resource)\b)["']?(.+)["']?\s*$/i,
@@ -224,7 +229,7 @@ export class TextParser {
         }
         break;
 
-      case 'assign_resource':
+      case 'assign_resource_to_extrawork':
         if (parsed.entities.resourceName && parsed.entities.extraWorkId) {
           params.resourceName = parsed.entities.resourceName;
           params.extraWorkId = parsed.entities.extraWorkId;

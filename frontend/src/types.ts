@@ -1,4 +1,4 @@
-export type ViewType = 'recursos' | 'extraworks';
+export type ViewType = 'home' | 'recursos' | 'extraworks';
 
 export interface ExtraWork {
   id: string;
@@ -17,7 +17,7 @@ export interface Resource {
   type: string;
   availability: string;
   extraWorkId?: string | null;
+  extraWork?: ExtraWork | null;
   createdAt: string;
   updatedAt: string;
-  extraWorks?: ExtraWork[];
 }

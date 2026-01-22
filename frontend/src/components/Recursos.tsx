@@ -1,10 +1,15 @@
 import { useState, useEffect } from 'react';
-import { Users, Plus, Edit2, Trash2, X, Briefcase } from 'lucide-react';
+import { Users, Plus, Edit2, Trash2, X, Briefcase, ExternalLink } from 'lucide-react';
 import { apiService } from '../services/api';
-import type { Resource } from '../types';
+import type { Resource, ViewType, ExtraWork } from '../types';
 
-export default function Recursos() {
+interface RecursosProps {
+  onNavigate?: (view: ViewType) => void;
+}
+
+export default function Recursos({ onNavigate }: RecursosProps) {
   const [recursos, setRecursos] = useState<Resource[]>([]);
+  const [extraworks, setExtraworks] = useState<ExtraWork[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingResource, setEditingResource] = useState<Resource | null>(null);
@@ -14,6 +19,7 @@ export default function Recursos() {
     name: '',
     type: '',
     availability: 'available',
+    extraWorkId: '',
   });
 
   const showNotification = (message: string, type: 'success' | 'error') => {
@@ -39,6 +45,7 @@ export default function Recursos() {
         name: prefilledName,
         type: prefilledType,
         availability: 'available',
+        extraWorkId: '',
       });
       setShowModal(true);
     };
@@ -87,8 +94,12 @@ export default function Recursos() {
   const loadRecursos = async () => {
     try {
       setLoading(true);
-      const data = await apiService.getResources();
-      setRecursos(data);
+      const [resourcesData, extraworksData] = await Promise.all([
+        apiService.getResources(),
+        apiService.getExtraWorks()
+      ]);
+      setRecursos(resourcesData);
+      setExtraworks(extraworksData);
     } catch (error) {
       console.error('Error cargando recursos:', error);
       showNotification('Error al cargar recursos', 'error');
@@ -118,7 +129,7 @@ export default function Recursos() {
       }
       
       setShowModal(false);
-      setFormData({ name: '', type: '', availability: 'available' });
+      setFormData({ name: '', type: '', availability: 'available', extraWorkId: '' });
       setEditingResource(null);
       loadRecursos();
       showNotification(editingResource ? 'Recurso actualizado correctamente' : 'Recurso creado correctamente', 'success');
@@ -134,6 +145,7 @@ export default function Recursos() {
       name: resource.name,
       type: resource.type,
       availability: resource.availability,
+      extraWorkId: resource.extraWorkId || '',
     });
     setShowModal(true);
   };
@@ -153,7 +165,7 @@ export default function Recursos() {
 
   const handleNewResource = () => {
     setEditingResource(null);
-    setFormData({ name: '', type: '', availability: 'available' });
+    setFormData({ name: '', type: '', availability: 'available', extraWorkId: '' });
     setShowModal(true);
   };
 
@@ -268,7 +280,7 @@ export default function Recursos() {
                     }`}
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-xs font-mono text-gray-500">{resource.id.slice(0, 8)}...</div>
+                      <div className="text-sm font-mono font-medium text-gray-700">{resource.id}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">{resource.name}</div>
@@ -280,9 +292,30 @@ export default function Recursos() {
                       {getAvailabilityBadge(resource.availability)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-600">
-                        {resource.extraWorkId ? (
-                          <span className="text-blue-600">Asignado</span>
+                      <div className="text-sm">
+                        {resource.extraWorkId && resource.extraWork ? (
+                          <button
+                            onClick={() => {
+                              if (onNavigate) {
+                                onNavigate('extraworks');
+                                setTimeout(() => {
+                                  window.dispatchEvent(new CustomEvent('highlightExtraWork', {
+                                    detail: {
+                                      extraWorkId: resource.extraWorkId,
+                                      extraWorkTitle: resource.extraWork?.title
+                                    }
+                                  }));
+                                }, 100);
+                              }
+                            }}
+                            className="flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:underline"
+                          >
+                            <Briefcase className="w-3 h-3" />
+                            <span className="font-medium">{resource.extraWorkId}</span>
+                            <ExternalLink className="w-3 h-3" />
+                          </button>
+                        ) : resource.extraWorkId ? (
+                          <span className="text-blue-600 font-medium">{resource.extraWorkId}</span>
                         ) : (
                           <span className="text-gray-400">Sin asignar</span>
                         )}
@@ -374,13 +407,31 @@ export default function Recursos() {
                 </select>
               </div>
 
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Asignar a ExtraWork
+                </label>
+                <select
+                  value={formData.extraWorkId}
+                  onChange={(e) => setFormData({ ...formData, extraWorkId: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="">Sin asignar</option>
+                  {extraworks.map((ew) => (
+                    <option key={ew.id} value={ew.id}>
+                      {ew.id} - {ew.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               <div className="flex gap-3 pt-4">
                 <button
                   type="button"
                   onClick={() => {
                     setShowModal(false);
                     setEditingResource(null);
-                    setFormData({ name: '', type: '', availability: 'available' });
+                    setFormData({ name: '', type: '', availability: 'available', extraWorkId: '' });
                   }}
                   className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                 >

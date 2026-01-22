@@ -7,9 +7,20 @@ export class ResourceService {
     this.prisma = prisma;
   }
 
+  private async generateResourceId(): Promise<string> {
+    // Get the count of existing Resources to generate sequential ID
+    const count = await this.prisma.resource.count();
+    const nextNumber = count + 1;
+    return `R-${nextNumber.toString().padStart(3, '0')}`;
+  }
+
   async create(data: Prisma.ResourceCreateInput): Promise<Resource> {
-    return this.prisma.resource.create({ 
-      data,
+    const id = await this.generateResourceId();
+    return this.prisma.resource.create({
+      data: {
+        id,
+        ...data
+      },
       include: { extraWork: true }
     });
   }

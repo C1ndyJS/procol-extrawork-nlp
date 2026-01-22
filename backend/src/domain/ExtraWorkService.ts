@@ -8,13 +8,20 @@ export class ExtraWorkService {
     this.prisma = prisma;
   }
 
-  private generateExtraWorkCode(): string {
-    return `EW-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+  private async generateExtraWorkId(): Promise<string> {
+    // Get the count of existing ExtraWorks to generate sequential ID
+    const count = await this.prisma.extraWork.count();
+    const nextNumber = count + 1;
+    return `EW-${nextNumber.toString().padStart(3, '0')}`;
   }
 
   async create(data: Prisma.ExtraWorkCreateInput): Promise<ExtraWork> {
-    return this.prisma.extraWork.create({ 
-      data
+    const id = await this.generateExtraWorkId();
+    return this.prisma.extraWork.create({
+      data: {
+        id,
+        ...data
+      }
     });
   }
 

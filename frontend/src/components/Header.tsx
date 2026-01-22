@@ -1,5 +1,5 @@
 import { useKBar } from 'kbar';
-import { Search, Command } from 'lucide-react';
+import { Search, Command, Home } from 'lucide-react';
 import { ViewType } from '../types';
 
 interface HeaderProps {
@@ -15,7 +15,13 @@ export default function Header({ currentView, onNavigate }: HeaderProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-8">
-            <h1 className="text-xl font-bold text-gray-900">Extraworks App</h1>
+            <button
+              onClick={() => onNavigate('home')}
+              className="flex items-center gap-2 text-xl font-bold text-gray-900 hover:text-blue-600 transition-colors"
+            >
+              <Home className="w-5 h-5" />
+              <span>Extraworks App</span>
+            </button>
 
             <nav className="hidden md:flex gap-1">
               <NavButton
@@ -40,7 +46,7 @@ export default function Header({ currentView, onNavigate }: HeaderProps) {
             <Search className="w-4 h-4" />
             <span className="hidden sm:inline">Buscar acciones</span>
             <kbd className="hidden sm:inline px-2 py-0.5 text-xs font-semibold text-gray-600 bg-white border border-gray-200 rounded">
-              <Command className="w-3 h-3 inline" /> L
+              <Command className="w-3 h-3 inline" /> K
             </kbd>
           </button>
         </div>

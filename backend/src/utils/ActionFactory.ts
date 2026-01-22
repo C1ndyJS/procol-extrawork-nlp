@@ -108,24 +108,37 @@ export class ActionFactory {
     // Sort by score (descending)
     matches.sort((a, b) => b.score - a.score);
 
-    const suggestions: ActionSuggestion[] = matches.map(match => {
+    const suggestions: ActionSuggestion[] = [];
+
+    console.log('[ActionFactory] Parsed intention:', parsed.intention);
+    console.log('[ActionFactory] Parsed entities:', parsed.entities);
+
+    for (const match of matches) {
       const intention = match.intention;
       const params = parsed.intention === intention.name
         ? this.textParser.extractParams(parsed, intention.name)
         : {};
 
+      console.log(`[ActionFactory] Checking ${intention.name}, params:`, params);
+
+      // Filter out intents that require mandatory params that weren't provided
+      if (this.requiresMandatoryParams(intention.name, params)) {
+        console.log(`[ActionFactory] Filtering out ${intention.name} - missing required params`);
+        continue;
+      }
+
       // Generate human-readable title and subtitle
       const { title, subtitle } = this.generateActionLabels(intention.name, params, parsed);
 
-      return {
+      suggestions.push({
         intent: intention.name,
         score: match.score,
         description: intention.description,
         title,
         subtitle,
         params
-      };
-    });
+      });
+    }
 
     // Search for resources by name if query doesn't match a specific intention
     if (this.resourceService && query.trim().length >= 2) {
@@ -211,6 +224,23 @@ export class ActionFactory {
     }
   }
 
+  /**
+   * Check if an intent requires mandatory parameters that weren't provided
+   */
+  private requiresMandatoryParams(intent: string, params: any): boolean {
+    // Intents that require an id or code to be actionable
+    const requiresIdOrCode = ['delete_extrawork', 'update_extrawork', 'open_extrawork'];
+
+    if (requiresIdOrCode.includes(intent)) {
+      // Only show these intents if id or code was extracted from the query
+      if (!params.id && !params.code) {
+        return true; // Skip this intent
+      }
+    }
+
+    return false;
+  }
+
   private generateActionLabels(intent: string, params: any, parsed: ParsedQuery): { title: string; subtitle?: string } {
     switch (intent) {
       case 'create_extrawork':
@@ -260,6 +290,24 @@ export class ActionFactory {
 
       case 'create_resource':
         return { title: 'Crear nuevo recurso' };
+
+      case 'delete_extrawork':
+        if (params.id || params.code) {
+          return {
+            title: `Eliminar ExtraWork: ${params.code || params.id}`,
+            subtitle: 'Eliminar este ExtraWork'
+          };
+        }
+        return { title: 'Eliminar ExtraWork' };
+
+      case 'update_extrawork':
+        if (params.id || params.code) {
+          return {
+            title: `Editar ExtraWork: ${params.code || params.id}`,
+            subtitle: 'Modificar este ExtraWork'
+          };
+        }
+        return { title: 'Editar ExtraWork' };
 
       default:
         return { title: intent };

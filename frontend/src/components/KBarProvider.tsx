@@ -11,7 +11,7 @@ import {
   useRegisterActions,
   Priority,
 } from 'kbar';
-import { Briefcase, Settings, User, LogOut, Plus, Search, FileText, Zap } from 'lucide-react';
+import { Briefcase, Settings, User, LogOut, Plus, Search, FileText, Zap, Home } from 'lucide-react';
 import { ViewType } from '../types';
 import { apiService, ActionSuggestion } from '../services/api';
 
@@ -36,6 +36,15 @@ export default function KBarProvider({ children, onNavigate }: KBarProviderProps
 
   // Static navigation actions - Memoized
   const staticActions: Action[] = useMemo(() => [
+    {
+      id: 'home',
+      name: 'Inicio',
+      shortcut: ['h'],
+      keywords: 'inicio home principal volver',
+      section: 'Navegación',
+      perform: () => onNavigate('home'),
+      icon: <Home className="w-5 h-5" />,
+    },
     {
       id: 'recursos',
       name: 'Recursos',
@@ -288,7 +297,7 @@ function DynamicActionsHandler({
       const debounceTimer = setTimeout(async () => {
         try {
           console.log('[KBar] Fetching actions for:', trimmedQuery);
-          const suggestions = await apiService.searchActions(trimmedQuery, 0.1);
+          const suggestions = await apiService.searchActions(trimmedQuery, 0.15);
           console.log('[KBar] Backend returned:', suggestions);
           const actions = convertToKBarActions(suggestions, trimmedQuery);
           console.log('[KBar] Converted to actions:', actions.length);
